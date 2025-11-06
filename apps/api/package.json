@@ -1,0 +1,33 @@
+{
+  "name": "@cloudflare-monitor/api",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Backend API for Cloudflare deployment monitoring",
+  "type": "module",
+  "scripts": {
+    "dev": "bun run --watch src/index.ts",
+    "build": "bun build src/index.ts --target=bun --outdir=dist",
+    "start": "bun run src/index.ts",
+    "test": "bun test",
+    "lint": "eslint src/**/*.ts",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@cloudflare-monitor/shared": "workspace:*",
+    "@cloudflare-monitor/cloudflare-sdk": "workspace:*",
+    "hono": "^4.0.0",
+    "better-sqlite3": "^9.2.2",
+    "zod": "^3.22.4"
+  },
+  "devDependencies": {
+    "@types/better-sqlite3": "^7.6.8",
+    "@types/bun": "^1.0.0",
+    "typescript": "^5.3.3",
+    "eslint": "^8.56.0",
+    "@typescript-eslint/eslint-plugin": "^6.18.1",
+    "@typescript-eslint/parser": "^6.18.1"
+  },
+  "engines": {
+    "bun": ">=1.0.0"
+  }
+}

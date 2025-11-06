@@ -1,0 +1,616 @@
+# ============================================================================
+# Cloudflare Monitor - Comprehensive .gitignore
+# 
+# Security Architecture: Multi-layered defense against credential exposure
+# 
+# Design Principles:
+# 1. Defense in Depth: Multiple patterns catch edge cases
+# 2. Explicit Over Implicit: Document WHY each exclusion exists
+# 3. Zero Trust: Assume any dynamic file could contain secrets
+# 4. Performance: Exclude build artifacts to keep repo lean
+# 
+# Organizational Structure:
+# - Secrets & Credentials (CRITICAL - prevents data breaches)
+# - Build Artifacts (performance - reduces clone size)
+# - Dependencies (performance - reduces repo bloat)
+# - Development Tools (cleanliness - IDE-specific configs)
+# - Operating System (cleanliness - platform cruft)
+# - Runtime Artifacts (safety - prevents accidental commits)
+# ============================================================================
+
+# ============================================================================
+# 🔐 SECRETS & CREDENTIALS - CRITICAL SECURITY BOUNDARY
+# ============================================================================
+# 
+# Architectural Rationale:
+# These files contain sensitive authentication credentials that would compromise
+# system security if exposed. This is the PRIMARY defense against credential leaks.
+#
+# Attack Vectors Mitigated:
+# - API token exposure → unauthorized Cloudflare access
+# - Database credentials → data exfiltration
+# - Private keys → identity spoofing
+# - Session tokens → session hijacking
+# ============================================================================
+
+# Environment Configuration Files
+# Pattern Strategy: Catch files starting with .env AND ending with .env
+.env
+.env.*
+*.env               # Catches: test.env, production.env, backup.env
+!.env.example       # Exception: Template files are safe to commit
+.envrc
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+.env.staging.local
+
+# Backup environment files (often created by editors)
+.env.backup
+.env.bak
+.env.old
+.env.save
+*.env.backup
+*.env.bak
+*.env.old
+
+# Secret management files
+secrets.json
+secrets.yaml
+secrets.yml
+secret.txt
+credentials.json
+credentials.yaml
+auth.json
+config.secret.*
+
+# API Keys and Tokens (catch common naming patterns)
+*apikey*
+*api-key*
+*api_key*
+*token*
+*secret*
+*password*
+*passwd*
+*.pem
+*.key
+*.p12
+*.pfx
+*.cer
+*.crt
+
+# SSH Keys (prevent accidental private key commits)
+id_rsa
+id_rsa.pub
+id_ed25519
+id_ed25519.pub
+*.ppk
+
+# ============================================================================
+# 📦 DEPENDENCIES - Performance Optimization
+# ============================================================================
+#
+# Architectural Rationale:
+# Dependencies are derived artifacts (reproducible via package.json/bun.lockb).
+# Excluding them:
+# - Reduces repository size by 80-95%
+# - Prevents merge conflicts in lockfiles
+# - Encourages hermetic builds
+# - Speeds up git operations
+#
+# Trade-off Analysis:
+# ✅ Smaller repo, faster clones
+# ✅ Cleaner diffs
+# ❌ Requires build step after clone (acceptable for modern workflows)
+# ============================================================================
+
+node_modules/
+.pnp
+.pnp.js
+.yarn/cache
+.yarn/unplugged
+.yarn/build-state.yml
+.yarn/install-state.gz
+
+# Bun specific
+.bun/
+bun.lockb.backup
+
+# npm
+package-lock.json.backup
+npm-debug.log*
+npm-error.log*
+
+# Yarn
+yarn-debug.log*
+yarn-error.log*
+.yarn-integrity
+
+# pnpm
+pnpm-debug.log*
+.pnpm-store/
+
+# ============================================================================
+# 🏗️  BUILD ARTIFACTS - Derived State Management
+# ============================================================================
+#
+# Architectural Rationale:
+# Build outputs are deterministically generated from source code.
+# Version controlling them violates the principle of "single source of truth."
+#
+# Benefits of Exclusion:
+# - Forces reproducible builds
+# - Reduces merge conflicts
+# - Keeps diffs focused on source changes
+# - Enables build-time optimizations without repo bloat
+# ============================================================================
+
+# TypeScript Compilation Outputs
+dist/
+build/
+out/
+*.tsbuildinfo
+tsconfig.tsbuildinfo
+
+# JavaScript Build Outputs
+lib/
+compiled/
+coverage/
+.next/
+.nuxt/
+.output/
+.cache/
+.temp/
+.tmp/
+
+# Vite
+dist-ssr/
+*.local
+
+# Parcel
+.parcel-cache/
+
+# Webpack
+.webpack/
+
+# Rollup
+.rollup.cache/
+
+# ============================================================================
+# 🗄️  DATABASE FILES - Data Sovereignty & Security
+# ============================================================================
+#
+# Architectural Rationale:
+# Database files contain operational data and potentially PII.
+# Committing them violates several principles:
+# - Data Sovereignty: Production data shouldn't be in version control
+# - Security: Could contain sensitive customer data
+# - Performance: Binary files bloat repository
+# - Correctness: Different environments need different data
+#
+# Exception Pattern: Test fixtures in subdirectories may be committed
+# ============================================================================
+
+# SQLite Databases (production data)
+*.db
+*.sqlite
+*.sqlite3
+*.db-shm
+*.db-wal
+
+# PostgreSQL dumps
+*.sql.gz
+*.dump
+
+# Database Backups
+*.backup
+*.bak
+*.old
+*_backup.*
+dump.rdb
+
+# Database logs
+*.log
+
+# Data directories (contain runtime database files)
+data/
+db/data/
+database/
+.data/
+
+# Exception: Allow test fixtures in specific directories
+!test/fixtures/**/*.db
+!tests/fixtures/**/*.db
+!__tests__/fixtures/**/*.db
+
+# ============================================================================
+# 📝 LOGS & TEMPORARY FILES - Operational Hygiene
+# ============================================================================
+#
+# Architectural Rationale:
+# Logs are runtime artifacts that:
+# - Contain potentially sensitive information (IPs, user IDs, stack traces)
+# - Are environment-specific (development vs production)
+# - Grow unbounded (performance issue)
+# - Should be managed by log aggregation systems, not git
+# ============================================================================
+
+# Application Logs
+logs/
+*.log
+log.txt
+*.log.*
+
+# npm/yarn logs
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+lerna-debug.log*
+.npm
+
+# Bun logs
+bun-debug.log*
+bun-error.log*
+
+# Debug files
+debug.log
+*.debug
+
+# Crash dumps
+*.dump
+core.*
+crash.log
+
+# Temporary files
+tmp/
+temp/
+*.tmp
+*.temp
+*.swp
+*.swo
+*~
+.DS_Store
+Thumbs.db
+
+# ============================================================================
+# 🖥️  OPERATING SYSTEM FILES - Platform Cruft
+# ============================================================================
+#
+# Architectural Rationale:
+# OS-specific files are:
+# - Non-portable (Windows vs macOS vs Linux)
+# - User-specific (thumbnails, indexes)
+# - Automatically regenerated
+# - Pollute repository with metadata
+# ============================================================================
+
+# macOS
+.DS_Store
+.AppleDouble
+.LSOverride
+._*
+.DocumentRevisions-V100
+.fseventsd
+.Spotlight-V100
+.TemporaryItems
+.Trashes
+.VolumeIcon.icns
+.com.apple.timemachine.donotpresent
+.AppleDB
+.AppleDesktop
+Network Trash Folder
+Temporary Items
+.apdisk
+
+# Windows
+Thumbs.db
+Thumbs.db:encryptable
+ehthumbs.db
+ehthumbs_vista.db
+[Dd]esktop.ini
+$RECYCLE.BIN/
+*.cab
+*.msi
+*.msix
+*.msm
+*.msp
+*.lnk
+
+# Linux
+.directory
+.Trash-*
+.nfs*
+
+# ============================================================================
+# 🛠️  IDE & EDITOR FILES - Development Environment Isolation
+# ============================================================================
+#
+# Architectural Rationale:
+# IDE configuration is:
+# - User-specific (personal preferences)
+# - Machine-specific (absolute paths)
+# - Tool-specific (not everyone uses same IDE)
+# 
+# Exception: Some projects commit shared IDE configs (.vscode/settings.json)
+# for team consistency. Evaluate based on team standardization needs.
+# ============================================================================
+
+# Visual Studio Code
+.vscode/*
+!.vscode/settings.json      # Exception: Shared team settings (optional)
+!.vscode/tasks.json         # Exception: Build tasks (optional)
+!.vscode/launch.json        # Exception: Debug configs (optional)
+!.vscode/extensions.json    # Exception: Recommended extensions (optional)
+*.code-workspace
+
+# JetBrains IDEs (WebStorm, IntelliJ, etc.)
+.idea/
+*.iml
+*.iws
+*.ipr
+out/
+.idea_modules/
+
+# Sublime Text
+*.sublime-project
+*.sublime-workspace
+
+# Vim
+[._]*.s[a-v][a-z]
+[._]*.sw[a-p]
+[._]s[a-rt-v][a-z]
+[._]ss[a-gi-z]
+[._]sw[a-p]
+Session.vim
+Sessionx.vim
+.netrwhist
+tags
+[._]*.un~
+
+# Emacs
+*~
+\#*\#
+/.emacs.desktop
+/.emacs.desktop.lock
+*.elc
+auto-save-list
+tramp
+.\#*
+
+# Eclipse
+.project
+.classpath
+.settings/
+.buildpath
+
+# Atom
+.atom/
+
+# ============================================================================
+# 🧪 TESTING ARTIFACTS - Test Isolation
+# ============================================================================
+#
+# Architectural Rationale:
+# Test outputs are derived and should be regenerated on each test run.
+# Committing them:
+# - Creates false confidence (stale results)
+# - Bloats repository (especially HTML reports)
+# - Masks test failures (old passing results)
+# ============================================================================
+
+# Test Coverage
+coverage/
+.nyc_output/
+*.lcov
+.coverage
+htmlcov/
+*.cover
+.hypothesis/
+.pytest_cache/
+junit.xml
+test-results/
+
+# Test databases (separate from main DB pattern)
+test.db
+test.sqlite
+*.test.db
+
+# E2E Testing
+playwright-report/
+test-results/
+.playwright/
+
+# ============================================================================
+# 📦 PACKAGE MANAGER ARTIFACTS - Reproducibility Over Caching
+# ============================================================================
+#
+# Architectural Rationale:
+# Package manager caches are:
+# - Machine-specific (local optimization)
+# - Reproducible (package manager can regenerate)
+# - Large (GB-scale for some projects)
+# - Stale (lockfiles are source of truth)
+# ============================================================================
+
+# npm
+.npm
+.eslintcache
+.stylelintcache
+
+# Yarn
+.yarn-cache/
+.yarn-integrity
+.pnp.*
+
+# pnpm
+.pnpm-debug.log
+.pnpm-store/
+
+# Bun
+.bun-cache/
+
+# ============================================================================
+# 🐳 DOCKER & CONTAINERIZATION - Runtime State
+# ============================================================================
+#
+# Architectural Rationale:
+# Docker artifacts contain runtime state and should be built, not committed.
+# Exceptions: Dockerfiles and docker-compose.yml ARE committed (infrastructure as code)
+# ============================================================================
+
+# Docker volumes
+docker-compose.override.yml
+.dockerignore.backup
+
+# Container data
+volumes/
+.docker/
+
+# ============================================================================
+# 🔄 CI/CD ARTIFACTS - Ephemeral Build State
+# ============================================================================
+#
+# Architectural Rationale:
+# CI/CD systems generate these artifacts. Version controlling them:
+# - Creates noise in git history
+# - Bloats repository
+# - May contain secrets (CI logs)
+# ============================================================================
+
+# GitHub Actions
+.github/workflows/*.log
+
+# CircleCI
+.circleci/config.backup.yml
+
+# Build outputs
+artifacts/
+.artifacts/
+reports/
+
+# ============================================================================
+# 🚀 CLOUDFLARE SPECIFIC - Platform Artifacts
+# ============================================================================
+#
+# Architectural Rationale:
+# Cloudflare tooling generates local artifacts that are:
+# - User-specific (wrangler sessions)
+# - Environment-specific (worker deployments)
+# - Regenerable (from source configuration)
+# ============================================================================
+
+# Wrangler
+.wrangler/
+wrangler.toml.backup
+worker/
+
+# Workers KV
+.kv/
+
+# ============================================================================
+# 📊 MONITORING & ANALYTICS - Privacy & Performance
+# ============================================================================
+#
+# Architectural Rationale:
+# Analytics and monitoring data:
+# - Contains PII (user tracking)
+# - Is time-series data (not source code)
+# - Should be in dedicated analytics platforms
+# ============================================================================
+
+.vscode/telemetry/
+.config/metrics/
+analytics/
+
+# ============================================================================
+# 🎨 ASSETS & MEDIA - Binary Bloat Prevention
+# ============================================================================
+#
+# Selective Exclusion Strategy:
+# - Exclude generated/derived images (thumbnails, optimized versions)
+# - Include source assets (design files used to generate final assets)
+# - Use Git LFS for large binary files if needed
+# ============================================================================
+
+# Generated assets
+dist/assets/
+public/generated/
+*.min.js
+*.min.css
+
+# Thumbnail caches
+*_thumb.*
+*_thumbnail.*
+
+# ============================================================================
+# 📚 DOCUMENTATION BUILD ARTIFACTS - Derived Content
+# ============================================================================
+#
+# Architectural Rationale:
+# Generated documentation (from JSDoc, TypeDoc, etc.) is derived from source.
+# Commit the generator config, not the generated output.
+# ============================================================================
+
+# Documentation builds
+docs/_build/
+docs/.vuepress/dist/
+site/
+_site/
+
+# API documentation
+api-docs/
+
+# ============================================================================
+# 🔒 SECURITY SCANNING RESULTS - Temporal Data
+# ============================================================================
+#
+# Architectural Rationale:
+# Security scan results are point-in-time and should be:
+# - Tracked in security platforms (Snyk, GitHub Security)
+# - Not committed (contains vulnerability details that help attackers)
+# ============================================================================
+
+.snyk
+snyk-report.json
+security-report.*
+vulnerability-scan.*
+
+# ============================================================================
+# 🌐 TRANSLATION & LOCALIZATION - Generated Catalogs
+# ============================================================================
+#
+# Architectural Rationale:
+# Some i18n tools generate compiled catalogs from source translations.
+# Commit source .po/.pot files, exclude compiled .mo files.
+# ============================================================================
+
+*.mo
+locale/*/LC_MESSAGES/*.mo
+
+# ============================================================================
+# 📱 MOBILE & NATIVE - Platform Artifacts
+# ============================================================================
+#
+# For future mobile app expansions
+# ============================================================================
+
+# iOS
+DerivedData/
+*.mobileprovision
+*.dSYM.zip
+
+# Android
+*.apk
+*.aab
+local.properties
+
+# ============================================================================
+# END OF .GITIGNORE
+# 
+# Maintenance Notes:
+# - Review quarterly for new patterns
+# - Document exceptions with inline comments
+# - Test with: git check-ignore -v <file>
+# - Audit commits: git log --all --full-history -- .env
+# ============================================================================

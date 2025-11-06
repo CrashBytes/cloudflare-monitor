@@ -1,0 +1,40 @@
+{
+  "name": "cloudflare-monitor",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Real-time monitoring platform for Cloudflare deployments",
+  "workspaces": [
+    "apps/*",
+    "packages/*"
+  ],
+  "scripts": {
+    "dev": "npm run dev --workspace=apps/api & npm run dev --workspace=apps/web",
+    "dev:api": "npm run dev --workspace=apps/api",
+    "dev:web": "npm run dev --workspace=apps/web",
+    "build": "npm run build --workspaces --if-present",
+    "build:api": "npm run build --workspace=apps/api",
+    "build:web": "npm run build --workspace=apps/web",
+    "test": "npm run test --workspaces --if-present",
+    "lint": "npm run lint --workspaces --if-present",
+    "setup": "sh ./scripts/setup.sh",
+    "migrate": "bun run ./scripts/migrate.ts",
+    "seed": "bun run ./scripts/seed.ts"
+  },
+  "devDependencies": {
+    "@types/node": "^20.10.0",
+    "typescript": "^5.3.3"
+  },
+  "engines": {
+    "node": ">=20.0.0",
+    "bun": ">=1.0.0"
+  },
+  "keywords": [
+    "cloudflare",
+    "monitoring",
+    "real-time",
+    "sse",
+    "deployment"
+  ],
+  "author": "CrashBytes",
+  "license": "MIT"
+}

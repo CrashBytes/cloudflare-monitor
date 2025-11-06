@@ -1,0 +1,36 @@
+{
+  "name": "@cloudflare-monitor/cloudflare-sdk",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Type-safe Cloudflare API client with retry logic",
+  "type": "module",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "import": "./dist/index.js",
+      "types": "./dist/index.d.ts"
+    }
+  },
+  "scripts": {
+    "build": "tsc",
+    "dev": "tsc --watch",
+    "typecheck": "tsc --noEmit",
+    "test": "bun test",
+    "lint": "eslint src/**/*.ts",
+    "clean": "rm -rf dist"
+  },
+  "dependencies": {
+    "@cloudflare-monitor/shared": "workspace:*"
+  },
+  "devDependencies": {
+    "@types/bun": "^1.0.0",
+    "typescript": "^5.3.3",
+    "eslint": "^8.56.0",
+    "@typescript-eslint/eslint-plugin": "^6.18.1",
+    "@typescript-eslint/parser": "^6.18.1"
+  },
+  "engines": {
+    "bun": ">=1.0.0"
+  }
+}
