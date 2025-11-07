@@ -34,17 +34,33 @@
 # ============================================================================
 
 # Environment Configuration Files
-# Pattern Strategy: Catch files starting with .env AND ending with .env
+# Pattern Strategy: Precise patterns with explicit exceptions
+# Architecture: Specific environment variants, not broad wildcards
+
+# Core env file (exact match)
 .env
-.env.*
-*.env               # Catches: test.env, production.env, backup.env
-!.env.example       # Exception: Template files are safe to commit
-.envrc
+
+# Specific environment variants (explicit, not wildcards)
 .env.local
+.env.development
 .env.development.local
+.env.test
 .env.test.local
+.env.production
 .env.production.local
+.env.staging
 .env.staging.local
+
+# Catch remaining .env.* patterns EXCEPT .env.example
+.env.*
+!.env.example
+!.env.example.*
+
+# Env files with suffix pattern
+*.env
+
+# Other env-related files
+.envrc
 
 # Backup environment files (often created by editors)
 .env.backup
@@ -66,19 +82,47 @@ auth.json
 config.secret.*
 
 # API Keys and Tokens (catch common naming patterns)
-*apikey*
-*api-key*
-*api_key*
-*token*
-*secret*
-*password*
-*passwd*
+# Pattern Strategy: Specific paths and extensions, avoid broad wildcards
+# Rationale: *secret* would block audit-secrets.sh and other legitimate files
+
+# Specific secret directories and files
+secrets/
+.secrets/
+secret.txt
+secret.json
+secret.yaml
+my-secret*
+app-secret*
+db-secret*
+api-secret*
+
+# Token and key files
+*-token.json
+*-token.txt
+*_token.json
+*_token.txt
+apikey.txt
+apikey.json
+api-key.txt
+api-key.json
 *.pem
 *.key
 *.p12
 *.pfx
 *.cer
 *.crt
+
+# Password files
+password.txt
+passwords.txt
+.password
+.passwords
+
+# Explicit exceptions for infrastructure scripts
+!scripts/*audit*.sh
+!scripts/*secret*.sh
+!scripts/*security*.sh
+!docs/*SECURITY*.md
 
 # SSH Keys (prevent accidental private key commits)
 id_rsa
