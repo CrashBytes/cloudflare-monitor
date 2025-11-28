@@ -12,6 +12,8 @@ export const envSchema = z.object({
   DATABASE_PATH: z.string().default('./data/monitor.db'),
   CORS_ORIGIN: z.string().url().default('http://localhost:5173'),
   LOG_LEVEL: z.enum(['debug', 'info', 'warn', 'error']).default('info'),
+  // How long to show failed deployments on dashboard (in days)
+  FAILURE_RETENTION_DAYS: z.coerce.number().int().positive().default(7),
 });
 
 export type EnvConfig = z.infer<typeof envSchema>;

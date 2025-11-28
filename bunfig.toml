@@ -1,0 +1,11 @@
+# Bun Configuration
+# https://bun.sh/docs/runtime/bunfig
+
+[test]
+# Coverage configuration
+coverage = true
+coverageDir = "coverage"
+coverageReporters = ["text", "lcov"]
+
+# Test timeout in milliseconds
+timeout = 30000

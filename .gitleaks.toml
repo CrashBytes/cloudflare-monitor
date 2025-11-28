@@ -1,0 +1,25 @@
+# Gitleaks configuration
+# https://github.com/gitleaks/gitleaks
+
+title = "Cloudflare Monitor Gitleaks Config"
+
+[extend]
+# Use default rules
+useDefault = true
+
+# Allowlist paths and patterns that are known false positives
+[allowlist]
+description = "Allowlist for known false positives"
+paths = [
+    # Pre-commit hook script contains detection patterns, not actual secrets
+    '''scripts/setup-hooks\.sh''',
+    # Documentation about secret detection
+    '''docs/SECURITY\.md''',
+]
+
+# Allowlist specific patterns that are detection patterns, not actual secrets
+regexes = [
+    # Pattern detection strings in hook scripts
+    '''grep.*BEGIN.*PRIVATE.*KEY''',
+    '''echo.*secret.*pattern''',
+]

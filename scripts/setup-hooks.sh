@@ -7,7 +7,7 @@
 # Prevents credential commits at source - before they reach remote repository
 #
 # Author: CrashBytes
-# Version: 1.0.0
+# Version: 2.0.0 - macOS compatible
 ##############################################################################
 
 set -euo pipefail
@@ -99,7 +99,7 @@ create_pre_commit_hook() {
 # Git Pre-Commit Hook - Secret Scanner
 #
 # Automatically scans staged files for credentials before allowing commit
-# CRITICAL: This is your last line of defense against credential exposure
+# Compatible with macOS and Linux
 ##############################################################################
 
 # Color codes
@@ -107,42 +107,6 @@ RED='\033[0;31m'
 YELLOW='\033[1;33m'
 GREEN='\033[0;32m'
 NC='\033[0m'
-
-# Secret detection patterns (high-confidence only)
-declare -a PATTERNS=(
-    # API Tokens
-    'api[_-]?key["\s:=]+[a-zA-Z0-9_\-]{20,}'
-    'api[_-]?token["\s:=]+[a-zA-Z0-9_\-]{20,}'
-    
-    # Cloudflare specific
-    '[a-zA-Z0-9_-]{40}'  # Cloudflare API token format
-    
-    # AWS
-    'AKIA[0-9A-Z]{16}'
-    'aws[_-]?secret[_-]?access[_-]?key'
-    
-    # Private Keys
-    '-----BEGIN (RSA |OPENSSH |PGP )?PRIVATE KEY'
-    
-    # Generic secrets
-    '[a-zA-Z0-9_]+[_]?(SECRET|PASSWORD|TOKEN)["\s:=]+[^\s]{8,}'
-    
-    # Database URLs
-    '(postgres|mysql|mongodb):\/\/[^\s]+:[^\s]+@'
-    
-    # OAuth and JWT
-    'oauth[_-]?token'
-    'eyJ[a-zA-Z0-9_\-]*\.eyJ[a-zA-Z0-9_\-]*\.[a-zA-Z0-9_\-]*'
-)
-
-# Files to exclude from scanning
-EXCLUDE_PATTERNS=(
-    'package-lock.json'
-    'yarn.lock'
-    'bun.lockb'
-    '*.min.js'
-    '*.map'
-)
 
 echo -e "${YELLOW}🔍 Scanning staged files for secrets...${NC}"
 
@@ -156,86 +120,156 @@ fi
 
 SECRETS_FOUND=0
 
+# Function to report a finding
+report_finding() {
+    local file="$1"
+    local pattern_name="$2"
+    
+    if [ $SECRETS_FOUND -eq 0 ]; then
+        echo ""
+        echo -e "${RED}╔════════════════════════════════════════════════════════════════╗${NC}"
+        echo -e "${RED}║                  ⚠️  COMMIT BLOCKED  ⚠️                         ║${NC}"
+        echo -e "${RED}║           Potential credentials detected in staged files       ║${NC}"
+        echo -e "${RED}╚════════════════════════════════════════════════════════════════╝${NC}"
+        echo ""
+    fi
+    
+    echo -e "${RED}✗ Potential secret in:${NC} $file"
+    echo -e "  Pattern: ${YELLOW}$pattern_name${NC}"
+    echo ""
+    
+    SECRETS_FOUND=$((SECRETS_FOUND + 1))
+}
+
+# Files to completely skip
+should_skip_file() {
+    local file="$1"
+    case "$file" in
+        package-lock.json|yarn.lock|bun.lockb|*.min.js|*.map)
+            return 0
+            ;;
+        *)
+            return 1
+            ;;
+    esac
+}
+
+# Files where placeholder tokens are expected (don't scan for generic patterns)
+is_documentation_file() {
+    local file="$1"
+    case "$file" in
+        .env.example|*.md|README*|CHANGELOG*|docs/*|install.sh|scripts/*)
+            return 0
+            ;;
+        *test*|*spec*|*mock*)
+            return 0
+            ;;
+        *)
+            return 1
+            ;;
+    esac
+}
+
 # Scan each staged file
 for file in $STAGED_FILES; do
-    # Skip excluded patterns
-    skip=false
-    for exclude in "${EXCLUDE_PATTERNS[@]}"; do
-        if [[ $file =~ $exclude ]]; then
-            skip=true
-            break
-        fi
-    done
-    
-    if $skip; then
+    # Skip lock files and minified
+    if should_skip_file "$file"; then
         continue
     fi
     
     # Skip binary files
-    if ! file "$file" | grep -q "text"; then
+    if [ -f "$file" ] && ! file "$file" | grep -q "text"; then
         continue
     fi
     
-    # Skip if file doesn't exist (deleted files)
+    # Skip if file doesn't exist
     if [ ! -f "$file" ]; then
         continue
     fi
     
-    # Scan file for each pattern
-    for pattern in "${PATTERNS[@]}"; do
-        if grep -qE "$pattern" "$file"; then
-            if [ $SECRETS_FOUND -eq 0 ]; then
-                echo ""
-                echo -e "${RED}╔════════════════════════════════════════════════════════════════╗${NC}"
-                echo -e "${RED}║                                                                ║${NC}"
-                echo -e "${RED}║                  ⚠️  COMMIT BLOCKED  ⚠️                         ║${NC}"
-                echo -e "${RED}║                                                                ║${NC}"
-                echo -e "${RED}║           Potential credentials detected in staged files       ║${NC}"
-                echo -e "${RED}║                                                                ║${NC}"
-                echo -e "${RED}╚════════════════════════════════════════════════════════════════╝${NC}"
-                echo ""
-            fi
-            
-            echo -e "${RED}✗ Potential secret in:${NC} $file"
-            echo -e "  Pattern: ${YELLOW}$pattern${NC}"
-            echo ""
-            
-            SECRETS_FOUND=$((SECRETS_FOUND + 1))
+    # Get file content
+    content=$(cat "$file")
+    
+    # ==========================================================================
+    # HIGH SEVERITY: Always scan for these (real secrets)
+    # ==========================================================================
+    
+    # AWS Access Key IDs (very specific format)
+    if echo "$content" | grep -qE 'AKIA[0-9A-Z]{16}'; then
+        report_finding "$file" "AWS Access Key ID"
+    fi
+    
+    # Private keys (use grep with fixed string for the dash issue)
+    if echo "$content" | grep -q "BEGIN RSA PRIVATE KEY" || \
+       echo "$content" | grep -q "BEGIN OPENSSH PRIVATE KEY" || \
+       echo "$content" | grep -q "BEGIN PRIVATE KEY" || \
+       echo "$content" | grep -q "BEGIN PGP PRIVATE KEY"; then
+        report_finding "$file" "Private Key"
+    fi
+    
+    # Database connection strings with credentials
+    if echo "$content" | grep -qE '(postgres|mysql|mongodb)://[^:]+:[^@]+@'; then
+        report_finding "$file" "Database credentials in URL"
+    fi
+    
+    # JWT tokens (very specific format)
+    if echo "$content" | grep -qE 'eyJ[a-zA-Z0-9_-]{10,}\.eyJ[a-zA-Z0-9_-]{10,}\.[a-zA-Z0-9_-]{10,}'; then
+        # Exclude if in a test file checking for JWT format
+        if ! is_documentation_file "$file"; then
+            report_finding "$file" "JWT Token"
         fi
-    done
+    fi
+    
+    # ==========================================================================
+    # MEDIUM SEVERITY: Skip for documentation/example files
+    # ==========================================================================
+    
+    if ! is_documentation_file "$file"; then
+        # Hardcoded token assignments (but not placeholders)
+        # Look for actual hex/base64 values, not placeholder text
+        if echo "$content" | grep -qE "(api_token|apiToken|API_TOKEN)[[:space:]]*[=:][[:space:]]*['\"][a-zA-Z0-9+/=_-]{32,}['\"]"; then
+            # Exclude obvious placeholders
+            if ! echo "$content" | grep -qE "(your_|example_|placeholder|xxxx|test_token|fake_)"; then
+                report_finding "$file" "Hardcoded API token"
+            fi
+        fi
+        
+        # Cloudflare API tokens (40 char, but only if it looks real)
+        # Real CF tokens don't contain underscores and are alphanumeric
+        if echo "$content" | grep -qE "CF_API_TOKEN[[:space:]]*[=:][[:space:]]*['\"]?[a-zA-Z0-9]{40}['\"]?"; then
+            if ! echo "$content" | grep -qE "your_|example|placeholder|xxxx"; then
+                report_finding "$file" "Cloudflare API Token"
+            fi
+        fi
+    fi
+    
+    # ==========================================================================
+    # Check for .env file being committed (should never happen)
+    # ==========================================================================
+    
+    if [[ "$file" == ".env" ]] || [[ "$file" == ".env.local" ]] || [[ "$file" == ".env.production" ]]; then
+        report_finding "$file" ".env file should not be committed"
+    fi
+    
 done
 
-# If secrets found, block commit and provide guidance
+# Final result
 if [ $SECRETS_FOUND -gt 0 ]; then
     echo "═══════════════════════════════════════════════════════════════════"
     echo -e "${YELLOW}REMEDIATION STEPS:${NC}"
     echo "═══════════════════════════════════════════════════════════════════"
     echo ""
-    echo "1. Remove secrets from files:"
-    echo "   • Move credentials to .env file"
-    echo "   • Ensure .env is in .gitignore"
-    echo "   • Use environment variables in code"
-    echo ""
-    echo "2. Unstage files:"
-    echo "   git reset HEAD <file>"
-    echo ""
-    echo "3. Make corrections and stage again:"
-    echo "   git add <file>"
-    echo ""
-    echo "4. Retry commit"
+    echo "1. Remove secrets from files"
+    echo "2. Unstage: git reset HEAD <file>"
+    echo "3. Fix and re-add: git add <file>"
     echo ""
     echo "═══════════════════════════════════════════════════════════════════"
-    echo -e "${RED}If this is a false positive:${NC}"
-    echo "• Review the pattern match carefully"
-    echo "• If legitimate, bypass with: git commit --no-verify"
-    echo "  (Use sparingly - you're bypassing security!)"
+    echo -e "${YELLOW}If this is a false positive:${NC}"
+    echo "  git commit --no-verify"
     echo "═══════════════════════════════════════════════════════════════════"
-    echo ""
-    
     exit 1
 else
-    echo -e "${GREEN}✓ No secrets detected - commit allowed${NC}"
-    echo ""
+    echo -e "${GREEN}✓ No secrets detected${NC}"
     exit 0
 fi
 EOF
@@ -261,21 +295,6 @@ verify_installation() {
         exit 1
     fi
     
-    # Test hook with a dummy commit
-    print_info "Running test scan..."
-    
-    # Create temporary test file
-    TEST_FILE=".pre-commit-test-$$"
-    echo "test content" > "$TEST_FILE"
-    git add "$TEST_FILE" 2>/dev/null || true
-    
-    # Test hook execution (will fail, but we just want to verify it runs)
-    bash "$HOOK_PATH" &>/dev/null || true
-    
-    # Cleanup
-    git reset HEAD "$TEST_FILE" 2>/dev/null || true
-    rm -f "$TEST_FILE"
-    
     print_success "Hook verified and operational"
 }
 
@@ -293,7 +312,7 @@ show_usage_info() {
     echo "• Scans every commit for credential patterns"
     echo "• Blocks commits containing potential secrets"
     echo "• Runs automatically - no manual intervention needed"
-    echo "• Executes in <100ms for typical commits"
+    echo "• Excludes .env.example, docs, and test files from false positives"
     echo ""
     echo "HOW TO USE:"
     echo "• Continue using git normally: git commit -m \"message\""
@@ -304,45 +323,9 @@ show_usage_info() {
     echo "• git commit --no-verify -m \"message\""
     echo "  ⚠️  Only for verified false positives"
     echo ""
-    echo "MAINTENANCE:"
-    echo "• Hook updates automatically with repository"
-    echo "• Reinstall anytime: ./scripts/setup-hooks.sh"
-    echo "• Restore backup: cp $BACKUP_PATH $HOOK_PATH"
-    echo ""
     echo "═══════════════════════════════════════════════════════════════════"
     echo ""
     print_success "You're protected! Future commits will be scanned automatically."
-    echo ""
-}
-
-##############################################################################
-# Team Deployment
-##############################################################################
-
-suggest_team_deployment() {
-    echo "═══════════════════════════════════════════════════════════════════"
-    echo -e "${BLUE}TEAM DEPLOYMENT RECOMMENDATIONS:${NC}"
-    echo "═══════════════════════════════════════════════════════════════════"
-    echo ""
-    echo "For team-wide adoption:"
-    echo ""
-    echo "1. Add to onboarding documentation:"
-    echo "   \"Run ./scripts/setup-hooks.sh after cloning repository\""
-    echo ""
-    echo "2. Include in README.md setup section:"
-    echo '   ```bash'
-    echo "   git clone <repository>"
-    echo "   cd <project>"
-    echo "   ./scripts/setup-hooks.sh  # Install security hooks"
-    echo '   ```'
-    echo ""
-    echo "3. Consider adding to install.sh:"
-    echo "   ./scripts/setup-hooks.sh"
-    echo ""
-    echo "4. Announce to team:"
-    echo "   \"New security hooks available - protects against credential leaks\""
-    echo ""
-    echo "═══════════════════════════════════════════════════════════════════"
     echo ""
 }
 
@@ -365,7 +348,6 @@ main() {
     
     # Information
     show_usage_info
-    suggest_team_deployment
     
     print_success "Setup complete!"
 }

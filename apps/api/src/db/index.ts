@@ -13,14 +13,14 @@
  * - Foreign keys enforced for referential integrity
  */
 
-import Database from 'better-sqlite3';
+import { Database } from 'bun:sqlite';
 import { readFileSync } from 'fs';
 import { join, dirname } from 'path';
 import { mkdirSync, existsSync } from 'fs';
 import { config } from '../config';
 
 export class DatabaseManager {
-  private static instance: Database.Database | null = null;
+  private static instance: Database | null = null;
 
   /**
    * Get or create database instance
@@ -30,7 +30,7 @@ export class DatabaseManager {
    * - Consistent connection configuration
    * - Centralized lifecycle management
    */
-  static getConnection(): Database.Database {
+  static getConnection(): Database {
     if (!this.instance) {
       this.instance = this.initializeDatabase();
     }
@@ -40,7 +40,7 @@ export class DatabaseManager {
   /**
    * Initialize database with schema and optimized pragmas
    */
-  private static initializeDatabase(): Database.Database {
+  private static initializeDatabase(): Database {
     // Ensure database directory exists
     const dbPath = config.DATABASE_PATH;
     const dbDir = dirname(dbPath);
@@ -49,9 +49,7 @@ export class DatabaseManager {
       mkdirSync(dbDir, { recursive: true });
     }
 
-    const db = new Database(dbPath, {
-      verbose: config.NODE_ENV === 'development' ? console.log : undefined,
-    });
+    const db = new Database(dbPath, { create: true });
 
     // Configure SQLite for optimal monitoring performance
     this.configurePragmas(db);
@@ -72,13 +70,12 @@ export class DatabaseManager {
    * - foreign_keys=ON: Enforce referential integrity
    * - cache_size: Tuned for monitoring workload
    */
-  private static configurePragmas(db: Database.Database): void {
-    db.pragma('journal_mode = WAL');
-    db.pragma('synchronous = NORMAL');
-    db.pragma('foreign_keys = ON');
-    db.pragma('cache_size = -16000'); // 16MB cache
-    db.pragma('temp_store = MEMORY');
-    db.pragma('mmap_size = 30000000000'); // 30GB memory-mapped I/O
+  private static configurePragmas(db: Database): void {
+    db.exec('PRAGMA journal_mode = WAL');
+    db.exec('PRAGMA synchronous = NORMAL');
+    db.exec('PRAGMA foreign_keys = ON');
+    db.exec('PRAGMA cache_size = -16000'); // 16MB cache
+    db.exec('PRAGMA temp_store = MEMORY');
     
     if (config.NODE_ENV === 'development') {
       console.log('[Database] Pragmas configured for optimal performance');
@@ -91,9 +88,9 @@ export class DatabaseManager {
    * Idempotent design: Safe to run multiple times
    * Uses IF NOT EXISTS for all schema objects
    */
-  private static initializeSchema(db: Database.Database): void {
+  private static initializeSchema(db: Database): void {
     try {
-      const schemaPath = join(__dirname, 'schema.sql');
+      const schemaPath = join(import.meta.dir, 'schema.sql');
       const schema = readFileSync(schemaPath, 'utf-8');
       
       // Execute schema in a transaction for atomicity
@@ -133,7 +130,7 @@ export class DatabaseManager {
   static healthCheck(): { status: 'operational' | 'degraded' | 'down'; details?: string } {
     try {
       const db = this.getConnection();
-      db.prepare('SELECT 1').get();
+      db.query('SELECT 1').get();
       return { status: 'operational' };
     } catch (error) {
       return { 
@@ -151,10 +148,7 @@ export class DatabaseManager {
       const db = this.getConnection();
       return {
         path: config.DATABASE_PATH,
-        inTransaction: db.inTransaction,
-        open: db.open,
-        readonly: db.readonly,
-        memory: db.memory,
+        open: true,
       };
     } catch (error) {
       return null;

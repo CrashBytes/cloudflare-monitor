@@ -9,23 +9,24 @@
     "build": "bun build src/index.ts --target=bun --outdir=dist",
     "start": "bun run src/index.ts",
     "test": "bun test",
+    "test:watch": "bun test --watch",
+    "test:coverage": "bun test --coverage",
     "lint": "eslint src/**/*.ts",
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
     "@cloudflare-monitor/shared": "workspace:*",
-    "@cloudflare-monitor/cloudflare-sdk": "workspace:*",
+    "arg": "^5.0.2",
     "hono": "^4.0.0",
-    "better-sqlite3": "^9.2.2",
     "zod": "^3.22.4"
   },
   "devDependencies": {
-    "@types/better-sqlite3": "^7.6.8",
     "@types/bun": "^1.0.0",
-    "typescript": "^5.3.3",
-    "eslint": "^8.56.0",
     "@typescript-eslint/eslint-plugin": "^6.18.1",
-    "@typescript-eslint/parser": "^6.18.1"
+    "@typescript-eslint/parser": "^6.18.1",
+    "eslint": "^8.56.0",
+    "ts-node": "^10.9.2",
+    "typescript": "^5.3.3"
   },
   "engines": {
     "bun": ">=1.0.0"

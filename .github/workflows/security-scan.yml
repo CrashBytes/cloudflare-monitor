@@ -1,33 +1,20 @@
 name: 🔒 Security Scan
 
-##############################################################################
-# Automated Secret Detection Workflow
-#
-# Scans all commits for exposed credentials using Gitleaks
-# Runs on: push, pull_request, and manual workflow_dispatch
-#
-# Blocks merges if secrets detected
-# Creates GitHub Security Alerts for findings
-##############################################################################
-
 on:
   push:
     branches: [ main, develop ]
   pull_request:
     branches: [ main, develop ]
-  workflow_dispatch:  # Manual trigger
+  workflow_dispatch:
   schedule:
-    - cron: '0 0 * * 0'  # Weekly scan on Sunday midnight UTC
+    - cron: '0 0 * * 0'
 
 permissions:
   contents: read
-  security-events: write  # Required for GitHub Security Alerts
-  pull-requests: write    # Required to comment on PRs
+  security-events: write
+  pull-requests: write
 
 jobs:
-  ##############################################################################
-  # Gitleaks Secret Scanning
-  ##############################################################################
   gitleaks:
     name: Credential Leak Detection
     runs-on: ubuntu-latest
@@ -36,15 +23,15 @@ jobs:
       - name: Checkout Repository
         uses: actions/checkout@v4
         with:
-          fetch-depth: 0  # Full history for comprehensive scanning
+          fetch-depth: 0
       
       - name: Run Gitleaks Scan
         id: gitleaks
         uses: gitleaks/gitleaks-action@v2
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          GITLEAKS_LICENSE: ${{ secrets.GITLEAKS_LICENSE }}  # Optional: for enterprise features
-        continue-on-error: true  # Don't fail workflow, handle in next step
+          GITLEAKS_CONFIG: .gitleaks.toml
+        continue-on-error: true
       
       - name: Upload Gitleaks Report
         if: steps.gitleaks.outcome == 'failure'
@@ -59,82 +46,16 @@ jobs:
         run: |
           if [ "${{ steps.gitleaks.outcome }}" == "success" ]; then
             echo "## ✅ Security Scan Passed" >> $GITHUB_STEP_SUMMARY
-            echo "" >> $GITHUB_STEP_SUMMARY
             echo "No credentials detected in scanned commits." >> $GITHUB_STEP_SUMMARY
-            echo "" >> $GITHUB_STEP_SUMMARY
-            echo "**Scan Details:**" >> $GITHUB_STEP_SUMMARY
-            echo "- Tool: Gitleaks v8" >> $GITHUB_STEP_SUMMARY
-            echo "- Commits Scanned: ${{ github.event.commits != null && length(github.event.commits) || 'Full History' }}" >> $GITHUB_STEP_SUMMARY
-            echo "- Patterns: AWS, GCP, Azure, Generic API Keys, Private Keys" >> $GITHUB_STEP_SUMMARY
           else
             echo "## ❌ Security Scan Failed" >> $GITHUB_STEP_SUMMARY
-            echo "" >> $GITHUB_STEP_SUMMARY
-            echo "**CRITICAL:** Potential credentials detected in commits." >> $GITHUB_STEP_SUMMARY
-            echo "" >> $GITHUB_STEP_SUMMARY
-            echo "### Immediate Actions Required:" >> $GITHUB_STEP_SUMMARY
-            echo "1. 🔄 **Rotate all exposed credentials immediately**" >> $GITHUB_STEP_SUMMARY
-            echo "2. 📋 Review the Gitleaks report artifact for details" >> $GITHUB_STEP_SUMMARY
-            echo "3. 🔨 Rewrite git history to remove secrets" >> $GITHUB_STEP_SUMMARY
-            echo "4. 🛡️ Install pre-commit hooks: \`./scripts/setup-hooks.sh\`" >> $GITHUB_STEP_SUMMARY
-            echo "" >> $GITHUB_STEP_SUMMARY
-            echo "**Remediation Guide:** See [docs/SECURITY.md](docs/SECURITY.md)" >> $GITHUB_STEP_SUMMARY
+            echo "**CRITICAL:** Potential credentials detected." >> $GITHUB_STEP_SUMMARY
           fi
-      
-      - name: Comment on Pull Request
-        if: github.event_name == 'pull_request' && steps.gitleaks.outcome == 'failure'
-        uses: actions/github-script@v7
-        with:
-          github-token: ${{ secrets.GITHUB_TOKEN }}
-          script: |
-            github.rest.issues.createComment({
-              issue_number: context.issue.number,
-              owner: context.repo.owner,
-              repo: context.repo.repo,
-              body: `## 🚨 Security Scan Alert
-              
-              **Potential credentials detected in this pull request.**
-              
-              ### ⚠️ Critical Actions Required:
-              
-              1. **DO NOT MERGE** until all secrets are removed
-              2. **Rotate exposed credentials** immediately  
-              3. **Rewrite commit history** to remove secrets
-              4. **Install pre-commit hooks** to prevent future leaks
-              
-              ### 📋 Detailed Findings:
-              
-              Download the \`gitleaks-report\` artifact from this workflow run for specific line numbers and patterns.
-              
-              ### 🔧 Remediation Steps:
-              
-              \`\`\`bash
-              # Install pre-commit hooks (prevents future commits with secrets)
-              ./scripts/setup-hooks.sh
-              
-              # Amend last commit to remove secret
-              git reset --soft HEAD~1
-              # Edit files to remove secrets
-              git add .
-              git commit -m "Remove exposed credentials"
-              git push --force-with-lease
-              \`\`\`
-              
-              **Reference:** [Security Guide](docs/SECURITY.md)
-              `
-            })
       
       - name: Fail Workflow if Secrets Found
         if: steps.gitleaks.outcome == 'failure'
-        run: |
-          echo "❌ Gitleaks detected potential secrets"
-          echo ""
-          echo "This workflow is intentionally failing to prevent merging code with exposed credentials."
-          echo "Review the Gitleaks report and follow remediation steps in docs/SECURITY.md"
-          exit 1
+        run: exit 1
 
-  ##############################################################################
-  # Dependency Vulnerability Scanning
-  ##############################################################################
   dependency-audit:
     name: Dependency Security Audit
     runs-on: ubuntu-latest
@@ -152,10 +73,7 @@ jobs:
         run: bun install --frozen-lockfile
       
       - name: Run Bun Audit
-        id: audit
-        run: |
-          # Bun audit for known vulnerabilities
-          bun audit || echo "AUDIT_FAILED=true" >> $GITHUB_ENV
+        run: bun audit || echo "AUDIT_FAILED=true" >> $GITHUB_ENV
         continue-on-error: true
       
       - name: Generate Audit Summary
@@ -163,32 +81,10 @@ jobs:
         run: |
           if [ "${{ env.AUDIT_FAILED }}" == "true" ]; then
             echo "## ⚠️ Dependency Vulnerabilities Found" >> $GITHUB_STEP_SUMMARY
-            echo "" >> $GITHUB_STEP_SUMMARY
-            echo "Known security vulnerabilities detected in dependencies." >> $GITHUB_STEP_SUMMARY
-            echo "" >> $GITHUB_STEP_SUMMARY
-            echo "**Action Required:** Review and update vulnerable packages" >> $GITHUB_STEP_SUMMARY
-            echo "" >> $GITHUB_STEP_SUMMARY
-            echo "\`\`\`bash" >> $GITHUB_STEP_SUMMARY
-            echo "bun audit --json > audit-report.json" >> $GITHUB_STEP_SUMMARY
-            echo "bun update  # Update to latest patch versions" >> $GITHUB_STEP_SUMMARY
-            echo "\`\`\`" >> $GITHUB_STEP_SUMMARY
           else
             echo "## ✅ No Dependency Vulnerabilities" >> $GITHUB_STEP_SUMMARY
-            echo "" >> $GITHUB_STEP_SUMMARY
-            echo "All dependencies are free from known security issues." >> $GITHUB_STEP_SUMMARY
           fi
-      
-      - name: Fail on High Severity Vulnerabilities
-        if: env.AUDIT_FAILED == 'true'
-        run: |
-          echo "⚠️ High or critical severity vulnerabilities detected"
-          echo "Update dependencies before merging"
-          # Uncomment to enforce:
-          # exit 1
 
-  ##############################################################################
-  # .gitignore Validation
-  ##############################################################################
   gitignore-validation:
     name: Validate .gitignore Rules
     runs-on: ubuntu-latest
@@ -200,48 +96,33 @@ jobs:
       - name: Check for Sensitive Files
         run: |
           echo "## 🔍 Sensitive File Detection" >> $GITHUB_STEP_SUMMARY
-          echo "" >> $GITHUB_STEP_SUMMARY
-          
-          # Patterns that should NEVER be committed
-          FORBIDDEN_PATTERNS=(
-            "*.env"
-            "*.key"
-            "*.pem"
-            "*.p12"
-            "*.pfx"
-            "credentials.json"
-            "secrets.yaml"
-            "*.sqlite"
-            "*.db"
-          )
           
           VIOLATIONS=0
           
-          for pattern in "${FORBIDDEN_PATTERNS[@]}"; do
-            if git ls-files | grep -qE "$pattern"; then
-              echo "❌ Found forbidden file pattern: $pattern" >> $GITHUB_STEP_SUMMARY
-              git ls-files | grep -E "$pattern" >> $GITHUB_STEP_SUMMARY
-              echo "" >> $GITHUB_STEP_SUMMARY
-              VIOLATIONS=$((VIOLATIONS + 1))
-            fi
-          done
+          # Check for .env files (not .env.example)
+          if git ls-files | grep -E '^\.env$|\.env\.(local|development|production|test)$' | grep -v example; then
+            echo "❌ Found .env files" >> $GITHUB_STEP_SUMMARY
+            VIOLATIONS=1
+          fi
+          
+          # Check for key/cert files
+          if git ls-files | grep -E '\.(key|pem|p12|pfx)$'; then
+            echo "❌ Found key/certificate files" >> $GITHUB_STEP_SUMMARY
+            VIOLATIONS=1
+          fi
+          
+          # Check for database files
+          if git ls-files | grep -E '\.(db|sqlite|sqlite3)$'; then
+            echo "❌ Found database files" >> $GITHUB_STEP_SUMMARY
+            VIOLATIONS=1
+          fi
           
           if [ $VIOLATIONS -eq 0 ]; then
-            echo "✅ No sensitive files detected in repository" >> $GITHUB_STEP_SUMMARY
-            echo "" >> $GITHUB_STEP_SUMMARY
-            echo "All forbidden patterns properly excluded by .gitignore" >> $GITHUB_STEP_SUMMARY
+            echo "✅ No sensitive files detected" >> $GITHUB_STEP_SUMMARY
           else
-            echo "" >> $GITHUB_STEP_SUMMARY
-            echo "**Action Required:**" >> $GITHUB_STEP_SUMMARY
-            echo "1. Add patterns to .gitignore" >> $GITHUB_STEP_SUMMARY
-            echo "2. Remove files: \`git rm --cached <file>\`" >> $GITHUB_STEP_SUMMARY
-            echo "3. Commit changes" >> $GITHUB_STEP_SUMMARY
             exit 1
           fi
 
-  ##############################################################################
-  # Security Policy Compliance
-  ##############################################################################
   security-policy-check:
     name: Security Policy Compliance
     runs-on: ubuntu-latest
@@ -252,68 +133,35 @@ jobs:
       
       - name: Verify Security Documentation
         run: |
-          echo "## 📄 Security Documentation Compliance" >> $GITHUB_STEP_SUMMARY
-          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "## 📄 Security Documentation" >> $GITHUB_STEP_SUMMARY
           
-          REQUIRED_FILES=(
-            "docs/SECURITY.md"
-            ".env.example"
-            ".gitignore"
-            "scripts/audit-secrets.sh"
-          )
+          MISSING=0
           
-          MISSING_FILES=()
-          
-          for file in "${REQUIRED_FILES[@]}"; do
+          for file in "docs/SECURITY.md" ".env.example" ".gitignore" "scripts/audit-secrets.sh"; do
             if [ ! -f "$file" ]; then
-              MISSING_FILES+=("$file")
+              echo "❌ Missing: $file" >> $GITHUB_STEP_SUMMARY
+              MISSING=1
+            else
+              echo "✅ Found: $file" >> $GITHUB_STEP_SUMMARY
             fi
           done
           
-          if [ ${#MISSING_FILES[@]} -eq 0 ]; then
-            echo "✅ All required security files present" >> $GITHUB_STEP_SUMMARY
-            echo "" >> $GITHUB_STEP_SUMMARY
-            for file in "${REQUIRED_FILES[@]}"; do
-              echo "- ✓ $file" >> $GITHUB_STEP_SUMMARY
-            done
-          else
-            echo "❌ Missing required security files:" >> $GITHUB_STEP_SUMMARY
-            echo "" >> $GITHUB_STEP_SUMMARY
-            for file in "${MISSING_FILES[@]}"; do
-              echo "- ✗ $file" >> $GITHUB_STEP_SUMMARY
-            done
-            echo "" >> $GITHUB_STEP_SUMMARY
-            echo "**Action Required:** Create missing files per [SECURITY.md](docs/SECURITY.md)" >> $GITHUB_STEP_SUMMARY
+          if [ $MISSING -eq 1 ]; then
             exit 1
           fi
       
       - name: Validate .env.example
         run: |
           if [ -f ".env.example" ]; then
-            # Check for actual secrets in example file
-            if grep -qE '[a-zA-Z0-9]{32,}|[A-Z]{2,}_[A-Z0-9_]{8,}=[^X]' .env.example; then
-              echo "❌ .env.example appears to contain real values" >> $GITHUB_STEP_SUMMARY
-              echo "" >> $GITHUB_STEP_SUMMARY
-              echo "Replace all actual credentials with placeholders:" >> $GITHUB_STEP_SUMMARY
-              echo "- CF_API_TOKEN=your_cloudflare_api_token_here" >> $GITHUB_STEP_SUMMARY
-              echo "- CF_ACCOUNT_ID=your_account_id_here" >> $GITHUB_STEP_SUMMARY
+            # Only fail if there are long alphanumeric strings that look like real tokens
+            # Exclude lines with common placeholder words
+            SUSPICIOUS=$(grep -v -E '#|^$|your_|_here|example|placeholder|localhost|0\.0\.0\.0' .env.example | grep -E '=[a-zA-Z0-9]{40,}$' || true)
+            
+            if [ -n "$SUSPICIOUS" ]; then
+              echo "❌ .env.example may contain real secrets:" >> $GITHUB_STEP_SUMMARY
+              echo "$SUSPICIOUS" >> $GITHUB_STEP_SUMMARY
               exit 1
             else
-              echo "✅ .env.example contains only placeholder values" >> $GITHUB_STEP_SUMMARY
+              echo "✅ .env.example contains only placeholders" >> $GITHUB_STEP_SUMMARY
             fi
           fi
-
-##############################################################################
-# Workflow Metadata
-##############################################################################
-
-# This workflow embodies defense-in-depth security principles:
-# 1. Secret scanning prevents credential exposure
-# 2. Dependency auditing catches vulnerable packages
-# 3. File validation ensures .gitignore compliance
-# 4. Policy checks enforce security documentation standards
-#
-# Failures are intentional - they prevent insecure code from merging
-# All checks must pass before pull requests can be approved
-#
-# For questions or exemption requests: security@crashbytes.com

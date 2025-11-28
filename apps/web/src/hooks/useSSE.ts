@@ -6,7 +6,7 @@
 
 import { useEffect } from 'react';
 import { useMonitoringStore } from '../stores/monitoringStore';
-import type { CloudflareDeployment, SSEMessage } from '@cloudflare-monitor/shared';
+import type { CloudflareDeployment } from '@cloudflare-monitor/shared';
 
 const SSE_URL = import.meta.env.VITE_API_URL || 'http://localhost:3001';
 
@@ -18,6 +18,7 @@ export function useSSE() {
     let reconnectTimeout: NodeJS.Timeout;
 
     const connect = () => {
+      console.log('[SSE] Connecting to:', `${SSE_URL}/api/events`);
       eventSource = new EventSource(`${SSE_URL}/api/events?topics=*`);
 
       eventSource.onopen = () => {
@@ -27,22 +28,27 @@ export function useSSE() {
       };
 
       eventSource.addEventListener('connected', (event) => {
-        const data = JSON.parse(event.data);
-        console.log('[SSE] Handshake confirmed:', data);
+        try {
+          const data = JSON.parse(event.data);
+          console.log('[SSE] Handshake confirmed:', data);
+        } catch (e) {
+          console.log('[SSE] Connected event received');
+        }
       });
 
       eventSource.addEventListener('deployment_update', (event) => {
         try {
-          const message: SSEMessage<CloudflareDeployment> = JSON.parse(event.data);
-          console.log('[SSE] Deployment update:', message.data);
-          updateDeployment(message.data);
+          const deployment: CloudflareDeployment = JSON.parse(event.data);
+          console.log('[SSE] Deployment update:', deployment);
+          updateDeployment(deployment);
         } catch (error) {
           console.error('[SSE] Failed to parse deployment_update:', error);
         }
       });
 
       eventSource.addEventListener('heartbeat', () => {
-        // Keep-alive signal, no action needed
+        // Keep-alive signal received
+        console.debug('[SSE] Heartbeat received');
       });
 
       eventSource.onerror = (error) => {

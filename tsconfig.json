@@ -2,25 +2,13 @@
   "compilerOptions": {
     "target": "ES2022",
     "module": "ESNext",
-    "lib": ["ES2022"],
     "moduleResolution": "bundler",
     "strict": true,
     "esModuleInterop": true,
     "skipLibCheck": true,
     "forceConsistentCasingInFileNames": true,
     "resolveJsonModule": true,
-    "declaration": true,
-    "declarationMap": true,
-    "sourceMap": true,
-    "composite": true,
-    "noUnusedLocals": true,
-    "noUnusedParameters": true,
-    "noImplicitReturns": true,
-    "noFallthroughCasesInSwitch": true,
-    "paths": {
-      "@cloudflare-monitor/shared": ["./packages/shared/src"],
-      "@cloudflare-monitor/cloudflare-sdk": ["./packages/cloudflare-sdk/src"]
-    }
+    "isolatedModules": true
   },
-  "exclude": ["node_modules", "dist", "build"]
+  "exclude": ["node_modules", "dist", "data", "coverage"]
 }

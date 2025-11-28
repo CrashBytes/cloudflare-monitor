@@ -1,0 +1,82 @@
+name: 🚀 Release
+
+on:
+  push:
+    tags:
+      - 'v*'
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    name: Create Release
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      
+      - name: Setup Bun
+        uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: latest
+      
+      - name: Install Dependencies
+        run: bun install --frozen-lockfile
+      
+      - name: Build All Packages
+        run: bun run build
+      
+      - name: Run Tests
+        run: bun test
+      
+      - name: Extract Version
+        id: version
+        run: echo "version=${GITHUB_REF#refs/tags/v}" >> $GITHUB_OUTPUT
+      
+      - name: Extract Changelog
+        id: changelog
+        run: |
+          # Extract changelog for this version
+          VERSION="${{ steps.version.outputs.version }}"
+          
+          # Get content between version headers
+          CHANGELOG=$(awk "/## \[${VERSION}\]/,/## \[/" CHANGELOG.md | head -n -1)
+          
+          # If no specific version found, use unreleased
+          if [ -z "$CHANGELOG" ]; then
+            CHANGELOG="Release v${VERSION}"
+          fi
+          
+          # Write to file for multiline output
+          echo "$CHANGELOG" > release_notes.md
+      
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v1
+        with:
+          name: v${{ steps.version.outputs.version }}
+          body_path: release_notes.md
+          draft: false
+          prerelease: ${{ contains(github.ref, 'alpha') || contains(github.ref, 'beta') || contains(github.ref, 'rc') }}
+          generate_release_notes: true
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      
+      - name: Generate Release Summary
+        run: |
+          echo "## 🚀 Release v${{ steps.version.outputs.version }}" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "Release created successfully!" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "**Assets:**" >> $GITHUB_STEP_SUMMARY
+          echo "- Source code (zip)" >> $GITHUB_STEP_SUMMARY
+          echo "- Source code (tar.gz)" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "**Install:**" >> $GITHUB_STEP_SUMMARY
+          echo "\`\`\`bash" >> $GITHUB_STEP_SUMMARY
+          echo "git clone --branch v${{ steps.version.outputs.version }} https://github.com/CrashBytes/cloudflare-monitor.git" >> $GITHUB_STEP_SUMMARY
+          echo "cd cloudflare-monitor && ./install.sh" >> $GITHUB_STEP_SUMMARY
+          echo "\`\`\`" >> $GITHUB_STEP_SUMMARY

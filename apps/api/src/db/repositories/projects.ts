@@ -5,11 +5,11 @@
  * Encapsulates all database operations for projects table
  */
 
-import type Database from 'better-sqlite3';
+import type { Database } from 'bun:sqlite';
 import type { CloudflareProject } from '@cloudflare-monitor/shared';
 
 export class ProjectsRepository {
-  constructor(private db: Database.Database) {}
+  constructor(private db: Database) {}
 
   /**
    * Insert or update project (upsert pattern)
@@ -42,13 +42,31 @@ export class ProjectsRepository {
    * Atomic operation for consistency
    */
   upsertMany(projects: CloudflareProject[]): void {
-    const transaction = this.db.transaction((projects: CloudflareProject[]) => {
+    const insertStmt = this.db.prepare(`
+      INSERT INTO projects (
+        id, name, account_id, subdomain, production_branch, created_at, last_synced_at
+      ) VALUES (?, ?, ?, ?, ?, ?, datetime('now'))
+      ON CONFLICT(id) DO UPDATE SET
+        name = excluded.name,
+        subdomain = excluded.subdomain,
+        production_branch = excluded.production_branch,
+        last_synced_at = datetime('now')
+    `);
+
+    const transaction = this.db.transaction(() => {
       for (const project of projects) {
-        this.upsert(project);
+        insertStmt.run(
+          project.id,
+          project.name,
+          project.accountId,
+          project.id,
+          project.production_branch || null,
+          project.createdAt
+        );
       }
     });
 
-    transaction(projects);
+    transaction();
   }
 
   /**

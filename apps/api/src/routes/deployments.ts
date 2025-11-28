@@ -2,29 +2,12 @@
  * 🚀 Deployments API Routes
  * 
  * Real-time deployment monitoring endpoints with advanced filtering capabilities.
- * 
- * ## Query Optimization Strategy
- * 
- * Deployments are the most frequently queried resource, requiring:
- * - **Aggressive caching**: 5s TTL on hot paths
- * - **Index-optimized queries**: Leverage database indices for status/environment
- * - **Pagination support**: Prevent unbounded result sets
- * - **Selective field projection**: Return only requested attributes (future enhancement)
- * 
- * ## Real-Time Update Mechanism
- * 
- * Changes propagate through multiple layers:
- * 1. Cloudflare API (source of truth)
- * 2. Polling service → Database write
- * 3. SSE broadcast → Connected clients
- * 4. Cache invalidation → Force refresh on next read
- * 
- * This **eventual consistency model** balances freshness with performance.
  */
 
 import { Hono } from 'hono';
 import { db, DeploymentsRepository } from '../db';
 import { deploymentsCache } from '../services/cache';
+import { config } from '../config';
 import type { APIResponse, CloudflareDeployment, DeploymentStatus } from '@cloudflare-monitor/shared';
 
 export const deploymentsRouter = new Hono();
@@ -39,14 +22,16 @@ const deploymentsRepo = new DeploymentsRepository(db);
  * Query Parameters:
  * - status: Filter by deployment status
  * - environment: Filter by production/preview
- * - limit: Maximum results (default: 100)
+ * - days: Only show deployments from last N days (for failures)
  */
 deploymentsRouter.get('/', async (c) => {
   try {
     const statusFilter = c.req.query('status') as DeploymentStatus | undefined;
     const envFilter = c.req.query('environment') as 'production' | 'preview' | undefined;
+    const daysParam = c.req.query('days');
+    const days = daysParam ? parseInt(daysParam) : undefined;
     
-    const cacheKey = `deployments:${statusFilter || 'all'}:${envFilter || 'all'}`;
+    const cacheKey = `deployments:${statusFilter || 'all'}:${envFilter || 'all'}:${days || 'all'}`;
     const cached = deploymentsCache.get(cacheKey);
     
     if (cached) {
@@ -63,8 +48,12 @@ deploymentsRouter.get('/', async (c) => {
     // Fetch from database with filters
     let deployments: CloudflareDeployment[];
     
-    if (statusFilter) {
+    if (statusFilter && days) {
+      deployments = deploymentsRepo.findByStatusRecent(statusFilter, days);
+    } else if (statusFilter) {
       deployments = deploymentsRepo.findByStatus(statusFilter);
+    } else if (days) {
+      deployments = deploymentsRepo.findRecent(days);
     } else {
       deployments = deploymentsRepo.findAll();
     }
@@ -86,6 +75,7 @@ deploymentsRouter.get('/', async (c) => {
         filters: {
           status: statusFilter,
           environment: envFilter,
+          days,
         },
       },
     } as APIResponse<CloudflareDeployment[]>);
@@ -216,9 +206,12 @@ deploymentsRouter.get('/active/latest', async (c) => {
 });
 
 /**
- * GET /api/deployments/stats
+ * GET /api/deployments/stats/summary
  * 
  * Aggregate deployment statistics by status.
+ * 
+ * Note: Failure count uses FAILURE_RETENTION_DAYS to avoid showing stale failures.
+ * All-time failure count is available as failureTotal.
  */
 deploymentsRouter.get('/stats/summary', async (c) => {
   try {
@@ -233,14 +226,21 @@ deploymentsRouter.get('/stats/summary', async (c) => {
       });
     }
 
+    const retentionDays = config.FAILURE_RETENTION_DAYS;
+
     const stats = {
       total: deploymentsRepo.count(),
       active: deploymentsRepo.countByStatus('active'),
       building: deploymentsRepo.countByStatus('building'),
       deploying: deploymentsRepo.countByStatus('deploying'),
-      failure: deploymentsRepo.countByStatus('failure'),
+      // Only count recent failures (within retention window)
+      failure: deploymentsRepo.countByStatusRecent('failure', retentionDays),
+      // Total failures for reference
+      failureTotal: deploymentsRepo.countByStatus('failure'),
       queued: deploymentsRepo.countByStatus('queued'),
       cancelled: deploymentsRepo.countByStatus('cancelled'),
+      // Include retention window for UI display
+      failureRetentionDays: retentionDays,
     };
 
     deploymentsCache.set(cacheKey, stats);

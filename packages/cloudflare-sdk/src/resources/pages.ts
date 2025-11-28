@@ -103,19 +103,13 @@ export class PagesResource {
 
   /**
    * List deployments for a project
-   * Supports pagination for large deployment histories
+   * Cloudflare Pages API doesn't use standard page/per_page pagination
+   * It returns all recent deployments by default
    */
   async listDeployments(
-    projectName: string,
-    params?: { page?: number; per_page?: number }
+    projectName: string
   ): Promise<CloudflareAPIResponse<PagesDeployment[]>> {
-    const queryParams = new URLSearchParams();
-    if (params?.page) queryParams.set('page', params.page.toString());
-    if (params?.per_page) queryParams.set('per_page', params.per_page.toString());
-
-    const query = queryParams.toString();
-    const endpoint = `/accounts/${this.accountId}/pages/projects/${projectName}/deployments${query ? `?${query}` : ''}`;
-
+    const endpoint = `/accounts/${this.accountId}/pages/projects/${projectName}/deployments`;
     return this.client.get<PagesDeployment[]>(endpoint);
   }
 
@@ -138,10 +132,7 @@ export class PagesResource {
    * Optimized query for monitoring active production state
    */
   async getLatestProduction(projectName: string): Promise<PagesDeployment | null> {
-    const response = await this.listDeployments(projectName, { 
-      page: 1, 
-      per_page: 10 
-    });
+    const response = await this.listDeployments(projectName);
     
     const productionDeployments = response.result.filter(
       d => d.environment === 'production'

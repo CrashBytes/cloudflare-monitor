@@ -1,55 +1,49 @@
 /**
- * Data Fetching Hook for Deployments
+ * useDeployments Hook
  * 
- * Implements SWR-like pattern with automatic refresh.
+ * Fetches and manages deployments data
  */
 
 import { useEffect, useState } from 'react';
 import { useMonitoringStore } from '../stores/monitoringStore';
-import { apiClient } from '../services/api';
+import { api } from '../services/api';
 
-export function useDeployments(projectId?: string) {
-  const { deployments, setDeployments, setLoading, setError } = useMonitoringStore();
-  const [refetchTrigger, setRefetchTrigger] = useState(0);
+export function useDeployments() {
+  const { deployments, setDeployments, setError } = useMonitoringStore();
+  const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
-    let cancelled = false;
+    let mounted = true;
 
     const fetchDeployments = async () => {
-      setLoading(true);
       try {
-        const data = projectId
-          ? await apiClient.getProjectDeployments(projectId)
-          : await apiClient.getDeployments();
+        setIsLoading(true);
+        const response = await api.getDeployments();
         
-        if (!cancelled) {
-          setDeployments(data);
-          setError(null);
+        if (mounted && response.success && response.data) {
+          setDeployments(response.data);
         }
       } catch (error) {
-        if (!cancelled) {
+        if (mounted) {
           setError(error instanceof Error ? error.message : 'Failed to fetch deployments');
         }
       } finally {
-        if (!cancelled) {
-          setLoading(false);
+        if (mounted) {
+          setIsLoading(false);
         }
       }
     };
 
     fetchDeployments();
 
+    // Refresh every 10 seconds (SSE provides real-time updates, this is a fallback)
+    const interval = setInterval(fetchDeployments, 10000);
+
     return () => {
-      cancelled = true;
+      mounted = false;
+      clearInterval(interval);
     };
-  }, [projectId, refetchTrigger, setDeployments, setLoading, setError]);
+  }, [setDeployments, setError]);
 
-  const refetch = () => setRefetchTrigger(prev => prev + 1);
-
-  return {
-    deployments: projectId
-      ? deployments.filter(d => d.projectId === projectId)
-      : deployments,
-    refetch,
-  };
+  return { deployments, isLoading };
 }

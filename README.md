@@ -4,9 +4,13 @@
 
 Built with architectural principles prioritizing performance, type safety, and operational excellence. Features Server-Sent Events (SSE) for millisecond-latency updates without polling overhead.
 
+[![CI](https://github.com/CrashBytes/cloudflare-monitor/actions/workflows/ci.yml/badge.svg)](https://github.com/CrashBytes/cloudflare-monitor/actions/workflows/ci.yml)
+[![Security](https://github.com/CrashBytes/cloudflare-monitor/actions/workflows/security-scan.yml/badge.svg)](https://github.com/CrashBytes/cloudflare-monitor/actions/workflows/security-scan.yml)
+[![Snyk](https://github.com/CrashBytes/cloudflare-monitor/actions/workflows/snyk.yml/badge.svg)](https://github.com/CrashBytes/cloudflare-monitor/actions/workflows/snyk.yml)
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
 [![Runtime: Bun](https://img.shields.io/badge/Runtime-Bun-black)](https://bun.sh)
 [![TypeScript](https://img.shields.io/badge/TypeScript-100%25-blue)](https://www.typescriptlang.org/)
+[![Version](https://img.shields.io/github/v/release/CrashBytes/cloudflare-monitor)](https://github.com/CrashBytes/cloudflare-monitor/releases)
 
 ## ✨ Key Features
 
@@ -506,7 +510,7 @@ Built with these excellent open-source projects:
 - [Zustand](https://github.com/pmndrs/zustand) - State management
 - [Tailwind CSS](https://tailwindcss.com) - Utility-first CSS
 - [Zod](https://zod.dev) - Schema validation
-- [better-sqlite3](https://github.com/WiseLibs/better-sqlite3) - SQLite bindings
+- [Bun SQLite](https://bun.sh/docs/api/sqlite) - Native SQLite bindings
 
 ## 📄 License
 

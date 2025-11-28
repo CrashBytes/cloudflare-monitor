@@ -658,3 +658,6 @@ local.properties
 # - Test with: git check-ignore -v <file>
 # - Audit commits: git log --all --full-history -- .env
 # ============================================================================
+
+# Snyk Security Extension - AI Rules (auto-generated)
+.github/instructions/snyk_rules.instructions.md

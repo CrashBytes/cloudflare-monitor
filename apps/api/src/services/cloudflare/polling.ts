@@ -226,10 +226,7 @@ export class CloudflarePollingService {
    * Limits to recent deployments to avoid unbounded growth.
    */
   private async fetchDeployments(project: CloudflareProject): Promise<CloudflareDeployment[]> {
-    const response = await this.sdk.pages.listDeployments(project.name, {
-      page: 1,
-      per_page: 50, // Limit to most recent deployments
-    });
+    const response = await this.sdk.pages.listDeployments(project.name);
 
     return response.result.map(d => ({
       id: d.id,

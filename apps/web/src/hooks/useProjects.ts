@@ -1,51 +1,49 @@
 /**
- * Data Fetching Hook for Projects
+ * useProjects Hook
  * 
- * Implements SWR-like pattern with automatic refresh.
+ * Fetches and manages projects data
  */
 
 import { useEffect, useState } from 'react';
 import { useMonitoringStore } from '../stores/monitoringStore';
-import { apiClient } from '../services/api';
+import { api } from '../services/api';
 
 export function useProjects() {
-  const { projects, setProjects, setLoading, setError } = useMonitoringStore();
-  const [refetchTrigger, setRefetchTrigger] = useState(0);
+  const { projects, setProjects, setError } = useMonitoringStore();
+  const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
-    let cancelled = false;
+    let mounted = true;
 
     const fetchProjects = async () => {
-      setLoading(true);
       try {
-        const data = await apiClient.getProjects();
+        setIsLoading(true);
+        const response = await api.getProjects();
         
-        if (!cancelled) {
-          setProjects(data);
-          setError(null);
+        if (mounted && response.success && response.data) {
+          setProjects(response.data);
         }
       } catch (error) {
-        if (!cancelled) {
+        if (mounted) {
           setError(error instanceof Error ? error.message : 'Failed to fetch projects');
         }
       } finally {
-        if (!cancelled) {
-          setLoading(false);
+        if (mounted) {
+          setIsLoading(false);
         }
       }
     };
 
     fetchProjects();
 
+    // Refresh every 30 seconds
+    const interval = setInterval(fetchProjects, 30000);
+
     return () => {
-      cancelled = true;
+      mounted = false;
+      clearInterval(interval);
     };
-  }, [refetchTrigger, setProjects, setLoading, setError]);
+  }, [setProjects, setError]);
 
-  const refetch = () => setRefetchTrigger(prev => prev + 1);
-
-  return {
-    projects,
-    refetch,
-  };
+  return { projects, isLoading };
 }

@@ -4,25 +4,36 @@
   "private": true,
   "description": "Real-time monitoring platform for Cloudflare deployments",
   "workspaces": [
-    "apps/*",
-    "packages/*"
+    "packages/*",
+    "apps/*"
   ],
   "scripts": {
-    "dev": "npm run dev --workspace=apps/api & npm run dev --workspace=apps/web",
-    "dev:api": "npm run dev --workspace=apps/api",
-    "dev:web": "npm run dev --workspace=apps/web",
-    "build": "npm run build --workspaces --if-present",
-    "build:api": "npm run build --workspace=apps/api",
-    "build:web": "npm run build --workspace=apps/web",
-    "test": "npm run test --workspaces --if-present",
-    "lint": "npm run lint --workspaces --if-present",
-    "setup": "sh ./scripts/setup.sh",
-    "migrate": "bun run ./scripts/migrate.ts",
-    "seed": "bun run ./scripts/seed.ts"
+    "dev": "concurrently \"npm:dev:api\" \"bun run dev:web\"",
+    "dev:api": "cd apps/api && bun run --watch src/index.ts",
+    "dev:web": "bun run --cwd apps/web dev",
+    "build": "bun run build:shared && bun run build:sdk && bun run build:api && bun run build:web",
+    "build:shared": "bun run --cwd packages/shared build",
+    "build:sdk": "bun run --cwd packages/cloudflare-sdk build",
+    "build:api": "bun run --cwd apps/api build",
+    "build:web": "bun run --cwd apps/web build",
+    "start": "bun run --cwd apps/api start",
+    "test": "bun test",
+    "test:watch": "bun test --watch",
+    "test:coverage": "bun test --coverage",
+    "lint": "eslint . --ext .ts,.tsx",
+    "typecheck": "echo 'Typecheck handled by build step'",
+    "setup": "chmod +x ./install.sh && ./install.sh",
+    "clean": "rm -rf node_modules apps/*/node_modules packages/*/node_modules apps/*/dist packages/*/dist data/*.db",
+    "version:patch": "npm version patch && git push --follow-tags",
+    "version:minor": "npm version minor && git push --follow-tags",
+    "version:major": "npm version major && git push --follow-tags"
   },
   "devDependencies": {
+    "@types/bun": "^1.0.0",
     "@types/node": "^20.10.0",
-    "typescript": "^5.3.3"
+    "concurrently": "^8.2.2",
+    "ts-node": "^10.9.2",
+    "typescript": "^5.9.3"
   },
   "engines": {
     "node": ">=20.0.0",
@@ -33,8 +44,21 @@
     "monitoring",
     "real-time",
     "sse",
-    "deployment"
+    "deployment",
+    "pages",
+    "workers"
   ],
   "author": "CrashBytes",
-  "license": "MIT"
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/CrashBytes/cloudflare-monitor.git"
+  },
+  "bugs": {
+    "url": "https://github.com/CrashBytes/cloudflare-monitor/issues"
+  },
+  "homepage": "https://github.com/CrashBytes/cloudflare-monitor#readme",
+  "dependencies": {
+    "dotenv": "^17.2.3"
+  }
 }
