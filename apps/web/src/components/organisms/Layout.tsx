@@ -5,7 +5,7 @@
  */
 
 import { Link, useLocation } from 'react-router-dom';
-import { LayoutDashboard, Folder, Cloud, RefreshCw } from 'lucide-react';
+import { LayoutDashboard, Folder, RefreshCw } from 'lucide-react';
 import { ConnectionStatus } from '../atoms/ConnectionStatus';
 import { useMonitoringStore } from '../../stores/monitoringStore';
 
@@ -30,9 +30,26 @@ export default function Layout({ children }: LayoutProps) {
           <div className="flex items-center justify-between h-16">
             {/* Logo */}
             <div className="flex items-center gap-3">
-              <div className="p-2 bg-cf-orange rounded-lg">
-                <Cloud className="h-5 w-5 text-white" />
-              </div>
+              <svg className="h-10 w-10" viewBox="0 0 32 32" xmlns="http://www.w3.org/2000/svg">
+                <defs>
+                  <linearGradient id="cfGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+                    <stop offset="0%" style={{ stopColor: '#f97316' }} />
+                    <stop offset="50%" style={{ stopColor: '#ea580c' }} />
+                    <stop offset="100%" style={{ stopColor: '#c2410c' }} />
+                  </linearGradient>
+                </defs>
+                <rect width="32" height="32" rx="7" fill="url(#cfGrad)" />
+                <path
+                  d="M 22 16 A 8 8 0 0 1 14 24 A 8 8 0 0 1 6 16 A 8 8 0 0 1 14 8"
+                  fill="none"
+                  stroke="white"
+                  strokeWidth="3.5"
+                  strokeLinecap="round"
+                />
+                <circle cx="25" cy="11" r="1.5" fill="white" opacity="0.9" />
+                <circle cx="25" cy="16" r="1.5" fill="white" opacity="0.9" />
+                <circle cx="25" cy="21" r="1.5" fill="white" opacity="0.9" />
+              </svg>
               <div>
                 <h1 className="text-lg font-bold text-gray-900">Cloudflare Monitor</h1>
                 <p className="text-xs text-gray-500">Real-time deployment tracking</p>
