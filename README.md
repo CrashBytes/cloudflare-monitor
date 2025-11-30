@@ -525,6 +525,6 @@ MIT License - see [LICENSE](LICENSE) file for details.
 
 ---
 
-**Built with architectural excellence by CrashBytes**
+**Built with architectural excellence by [CrashBytes](https://crashbytes.com)**
 
 *Empowering developers to monitor their infrastructure with real-time precision.*

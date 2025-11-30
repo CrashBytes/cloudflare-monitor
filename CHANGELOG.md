@@ -85,6 +85,7 @@ First production-ready release of Cloudflare Monitor - a real-time monitoring pl
 ### Changed
 - **License** - Changed from GPL-3.0 to MIT License (2024-11-30)
 - **Documentation** - Removed all emoji usage from documentation and scripts (2024-11-30)
+- **Branding** - Added backlinks to crashbytes.com in README and SECURITY.md (2024-11-30)
 
 ### Planned for v1.1.0
 - Email/Slack/Discord notifications for deployment failures

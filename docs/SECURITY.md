@@ -440,4 +440,4 @@ Response time commitments:
 
 **Remember**: Security is everyone's responsibility. When in doubt, ask. It's always better to raise a false alarm than to miss a real threat.
 
-*Built with security-first principles by CrashBytes*
+*Built with security-first principles by [CrashBytes](https://crashbytes.com)*
