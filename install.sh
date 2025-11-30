@@ -22,26 +22,15 @@ BLUE='\033[0;34m'
 CYAN='\033[0;36m'
 NC='\033[0m' # No Color
 
-# Emoji support check
-if [[ "$TERM_PROGRAM" == "Apple_Terminal" ]] || [[ "$TERM" == "xterm-256color" ]]; then
-    ROCKET="🚀"
-    CHECK="✅"
-    CROSS="❌"
-    WARN="⚠️"
-    PACKAGE="📦"
-    DATABASE="🗄️"
-    KEY="🔑"
-    GEAR="⚙️"
-else
-    ROCKET="[*]"
-    CHECK="[+]"
-    CROSS="[!]"
-    WARN="[?]"
-    PACKAGE="[~]"
-    DATABASE="[D]"
-    KEY="[K]"
-    GEAR="[G]"
-fi
+# Symbols
+ROCKET="[*]"
+CHECK="[+]"
+CROSS="[!]"
+WARN="[?]"
+PACKAGE="[~]"
+DATABASE="[D]"
+KEY="[K]"
+GEAR="[G]"
 
 echo ""
 echo -e "${CYAN}╔══════════════════════════════════════════════════════════════╗${NC}"
@@ -270,6 +259,6 @@ echo -e "  ${GEAR} ${CYAN}Individual Services:${NC}"
 echo -e "     API only:     ${YELLOW}bun run dev:api${NC}"
 echo -e "     Frontend only: ${YELLOW}bun run dev:web${NC}"
 echo ""
-echo -e "  📚 ${CYAN}Documentation:${NC}"
+echo -e "  [D] ${CYAN}Documentation:${NC}"
 echo -e "     ${BLUE}https://github.com/CrashBytes/cloudflare-monitor#readme${NC}"
 echo ""

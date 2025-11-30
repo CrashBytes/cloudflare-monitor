@@ -1,4 +1,4 @@
-# 🔒 Comprehensive Security Guide
+# Comprehensive Security Guide
 
 ## Security Philosophy
 
@@ -14,7 +14,7 @@ This project embodies a security-first architectural approach, recognizing that 
 
 ---
 
-## 🎯 Critical Security Domains
+## Critical Security Domains
 
 ### 1. Credential Management
 
@@ -69,11 +69,11 @@ kubectl create secret generic cf-monitor-secrets \
 ```
 
 **Never**:
-- ❌ Hardcode credentials in source code
-- ❌ Commit `.env` files to git
-- ❌ Share credentials via chat/email
-- ❌ Use production credentials in development
-- ❌ Store credentials in code comments
+- Hardcode credentials in source code
+- Commit `.env` files to git
+- Share credentials via chat/email
+- Use production credentials in development
+- Store credentials in code comments
 
 ---
 
@@ -215,7 +215,7 @@ git ls-files | grep -E '\.(env|key|pem)$'  # Should return empty
 
 ---
 
-## 🚨 Incident Response Procedures
+## Incident Response Procedures
 
 ### Secret Exposure Protocol
 
@@ -266,7 +266,7 @@ git ls-files | grep -E '\.(env|key|pem)$'  # Should return empty
 
 ---
 
-## 🛡️ Security Best Practices
+## Security Best Practices
 
 ### Development Workflow
 
@@ -294,7 +294,7 @@ git ls-files | grep -E '\.(env|key|pem)$'  # Should return empty
 
 **Correct Environment Variable Usage**:
 ```typescript
-// ✅ CORRECT: Fail-fast validation
+// CORRECT: Fail-fast validation
 import { z } from 'zod';
 
 const envSchema = z.object({
@@ -307,10 +307,10 @@ export const config = envSchema.parse(process.env);
 
 **Logging Security**:
 ```typescript
-// ❌ WRONG: Logs credential
+// WRONG: Logs credential
 console.log('API Response:', { token: apiToken, data });
 
-// ✅ CORRECT: Sanitized logging
+// CORRECT: Sanitized logging
 console.log('API Response:', { 
   token: '***REDACTED***', 
   data: sanitize(data) 
@@ -319,16 +319,16 @@ console.log('API Response:', {
 
 **Error Handling**:
 ```typescript
-// ❌ WRONG: Exposes credential in error
+// WRONG: Exposes credential in error
 throw new Error(`Auth failed with token: ${token}`);
 
-// ✅ CORRECT: Generic error message
+// CORRECT: Generic error message
 throw new Error('Authentication failed. Check credentials configuration.');
 ```
 
 ---
 
-## 📚 Security Resources
+## Security Resources
 
 ### Recommended Tools
 
@@ -359,7 +359,7 @@ curl -sSfL https://github.com/gitleaks/gitleaks/releases/latest/download/gitleak
 
 ---
 
-## ✅ Security Certification Checklist
+## Security Certification Checklist
 
 Before making repository public or deploying to production:
 
@@ -390,7 +390,7 @@ Before making repository public or deploying to production:
 
 ---
 
-## 🔄 Continuous Improvement
+## Continuous Improvement
 
 Security is not a one-time achievement but a continuous discipline requiring vigilance and adaptation.
 
@@ -415,7 +415,7 @@ After any security incident:
 
 ---
 
-## 📞 Security Contact
+## Security Contact
 
 **Non-urgent security questions**: Open GitHub issue with `security` label  
 **Potential vulnerability**: Email security@crashbytes.com  
@@ -428,7 +428,7 @@ Response time commitments:
 
 ---
 
-## 📝 Changelog
+## Changelog
 
 | Date | Change | Author |
 |------|--------|--------|
@@ -440,4 +440,4 @@ Response time commitments:
 
 **Remember**: Security is everyone's responsibility. When in doubt, ask. It's always better to raise a false alarm than to miss a real threat.
 
-*Built with security-first principles by CrashBytes* 🔒
+*Built with security-first principles by CrashBytes*

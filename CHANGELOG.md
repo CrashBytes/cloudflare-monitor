@@ -7,7 +7,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [1.0.0] - 2024-11-28
 
-### 🎉 Initial Release
+### Initial Release
 
 First production-ready release of Cloudflare Monitor - a real-time monitoring platform for Cloudflare Pages deployments.
 
@@ -84,6 +84,7 @@ First production-ready release of Cloudflare Monitor - a real-time monitoring pl
 
 ### Changed
 - **License** - Changed from GPL-3.0 to MIT License (2024-11-30)
+- **Documentation** - Removed all emoji usage from documentation and scripts (2024-11-30)
 
 ### Planned for v1.1.0
 - Email/Slack/Discord notifications for deployment failures

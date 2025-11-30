@@ -1,4 +1,4 @@
-# 🚀 Cloudflare Monitor
+# Cloudflare Monitor
 
 **Production-grade real-time monitoring platform for Cloudflare Pages deployments.**
 
@@ -12,7 +12,7 @@ Built with architectural principles prioritizing performance, type safety, and o
 [![TypeScript](https://img.shields.io/badge/TypeScript-100%25-blue)](https://www.typescriptlang.org/)
 [![Version](https://img.shields.io/github/v/release/CrashBytes/cloudflare-monitor)](https://github.com/CrashBytes/cloudflare-monitor/releases)
 
-## ✨ Key Features
+## Key Features
 
 - **Real-Time Updates**: SSE-powered live deployment status tracking with automatic reconnection
 - **Comprehensive Dashboard**: Metrics aggregation, project overview, deployment history
@@ -21,7 +21,7 @@ Built with architectural principles prioritizing performance, type safety, and o
 - **Type-Safe**: End-to-end TypeScript with runtime validation via Zod schemas
 - **Performance Optimized**: LRU caching, SQLite WAL mode, optimized polling intervals
 
-## 🚀 One-Command Installation
+## One-Command Installation
 
 The installation script handles everything: runtime detection, dependency resolution, credential gathering, and system initialization.
 
@@ -68,7 +68,7 @@ Required before installation:
 
 The installer will prompt for these and validate the format.
 
-## 🎯 Manual Installation (Advanced)
+## Manual Installation (Advanced)
 
 For environments requiring manual setup or air-gapped deployments:
 
@@ -106,7 +106,7 @@ bun run dev
 - API: `http://localhost:3001`
 - Health check: `http://localhost:3001/health`
 
-## 📊 Architecture
+## Architecture
 
 ### System Design Philosophy
 
@@ -165,7 +165,7 @@ Cloudflare Monitor implements a **layered architecture** with clear separation o
 | Poll Cycle Duration | < 3s | ~1.2s |
 | Database Query Time | < 50ms | ~8ms |
 
-## 🛠️ Development
+## Development
 
 ### Project Structure
 
@@ -240,7 +240,7 @@ bun run lint             # ESLint
 bun run test             # Run tests
 ```
 
-## 🚀 Production Deployment
+## Production Deployment
 
 ### Docker Compose (Recommended)
 
@@ -297,15 +297,15 @@ LOG_LEVEL=info
 ```
 
 **Security Checklist:**
-- [ ] Rotate API tokens regularly (30-90 days)
-- [ ] Use restrictive CORS origins
-- [ ] Enable HTTPS (Let's Encrypt or Cloudflare)
-- [ ] Set file permissions correctly (`chmod 600 .env`)
-- [ ] Configure firewall rules
-- [ ] Enable log rotation
-- [ ] Set up automated backups
+- Rotate API tokens regularly (30-90 days)
+- Use restrictive CORS origins
+- Enable HTTPS (Let's Encrypt or Cloudflare)
+- Set file permissions correctly (`chmod 600 .env`)
+- Configure firewall rules
+- Enable log rotation
+- Set up automated backups
 
-## 📖 API Documentation
+## API Documentation
 
 ### Core Endpoints
 
@@ -347,7 +347,7 @@ eventSource.addEventListener('heartbeat', () => {
 
 Full API reference: [docs/API.md](docs/API.md)
 
-## 🔧 Configuration
+## Configuration
 
 ### Environment Variables
 
@@ -369,7 +369,7 @@ Cloudflare API rate limits:
 - Balances freshness with performance
 - Recommended: 10000ms (10s)
 
-## 🔍 Monitoring & Observability
+## Monitoring & Observability
 
 ### Built-in Metrics
 
@@ -413,7 +413,7 @@ Access via `/health/detailed`:
 - Database query performance
 - Error rates
 
-## 🧪 Testing
+## Testing
 
 ```bash
 # Run all tests
@@ -431,7 +431,7 @@ bun test --coverage
 - Integration tests: `*.integration.test.ts` (API endpoints, database)
 - E2E tests: `*.e2e.test.ts` (full user flows)
 
-## 🤝 Contributing
+## Contributing
 
 Contributions welcome! Please follow these guidelines:
 
@@ -453,14 +453,14 @@ bun install
 bun run dev
 ```
 
-## 📚 Documentation
+## Documentation
 
 - [Architecture Guide](docs/ARCHITECTURE.md) - System design deep-dive
 - [API Reference](docs/API.md) - Complete endpoint documentation
 - [Configuration](docs/CONFIGURATION.md) - Environment variables guide
 - [Deployment Guide](docs/DEPLOYMENT.md) - Production deployment
 
-## 🔐 Security
+## Security
 
 **Reporting vulnerabilities:** security@crashbytes.com
 
@@ -471,36 +471,36 @@ bun run dev
 - SQL injection protection via prepared statements
 - Rate limiting on SSE connections
 
-## 📋 Roadmap
+## Roadmap
 
 ### Planned Features
 
-- [ ] **Analytics Dashboard**: Historical trends, performance metrics
-- [ ] **Alerting System**: Email, Slack, Discord notifications
-- [ ] **Worker Monitoring**: Script execution metrics
-- [ ] **R2 Storage Metrics**: Bucket usage and analytics
-- [ ] **Multi-Account Support**: Manage multiple Cloudflare accounts
-- [ ] **Deployment Logs**: View build logs and errors
-- [ ] **Custom Dashboards**: User-configurable views
-- [ ] **Export Functionality**: CSV/JSON data export
+- Analytics Dashboard: Historical trends, performance metrics
+- Alerting System: Email, Slack, Discord notifications
+- Worker Monitoring: Script execution metrics
+- R2 Storage Metrics: Bucket usage and analytics
+- Multi-Account Support: Manage multiple Cloudflare accounts
+- Deployment Logs: View build logs and errors
+- Custom Dashboards: User-configurable views
+- Export Functionality: CSV/JSON data export
 
 ### Performance Optimizations
 
-- [ ] GraphQL API layer
-- [ ] Redis for distributed caching
-- [ ] PostgreSQL migration path
-- [ ] Horizontal scaling support
-- [ ] CDN integration for static assets
+- GraphQL API layer
+- Redis for distributed caching
+- PostgreSQL migration path
+- Horizontal scaling support
+- CDN integration for static assets
 
 ### Developer Experience
 
-- [ ] Web-based configuration UI
-- [ ] One-click Cloudflare integration
-- [ ] Docker Desktop extension
-- [ ] VS Code extension
-- [ ] CLI tool for management
+- Web-based configuration UI
+- One-click Cloudflare integration
+- Docker Desktop extension
+- VS Code extension
+- CLI tool for management
 
-## 🙏 Acknowledgments
+## Acknowledgments
 
 Built with these excellent open-source projects:
 
@@ -512,11 +512,11 @@ Built with these excellent open-source projects:
 - [Zod](https://zod.dev) - Schema validation
 - [Bun SQLite](https://bun.sh/docs/api/sqlite) - Native SQLite bindings
 
-## 📄 License
+## License
 
 MIT License - see [LICENSE](LICENSE) file for details.
 
-## 📧 Support
+## Support
 
 - **Issues**: [GitHub Issues](https://github.com/CrashBytes/cloudflare-monitor/issues)
 - **Discussions**: [GitHub Discussions](https://github.com/CrashBytes/cloudflare-monitor/discussions)
@@ -525,6 +525,6 @@ MIT License - see [LICENSE](LICENSE) file for details.
 
 ---
 
-**Built with architectural excellence by CrashBytes** 🚀
+**Built with architectural excellence by CrashBytes**
 
 *Empowering developers to monitor their infrastructure with real-time precision.*
