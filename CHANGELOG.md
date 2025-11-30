@@ -82,6 +82,9 @@ First production-ready release of Cloudflare Monitor - a real-time monitoring pl
 
 ## [Unreleased]
 
+### Changed
+- **License** - Changed from GPL-3.0 to MIT License (2024-11-30)
+
 ### Planned for v1.1.0
 - Email/Slack/Discord notifications for deployment failures
 - Multi-account Cloudflare support
