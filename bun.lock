@@ -4,10 +4,8 @@
   "workspaces": {
     "": {
       "name": "cloudflare-monitor",
-      "dependencies": {
-        "dotenv": "^17.2.3",
-      },
       "devDependencies": {
+        "@types/bun": "^1.0.0",
         "@types/node": "^20.10.0",
         "concurrently": "^8.2.2",
         "ts-node": "^10.9.2",
@@ -18,6 +16,8 @@
       "name": "@cloudflare-monitor/api",
       "version": "1.0.0",
       "dependencies": {
+        "@cloudflare-monitor/shared": "workspace:*",
+        "@crashbytes/env-shield": "^1.0.0",
         "arg": "^5.0.2",
         "hono": "^4.0.0",
         "zod": "^3.22.4",
@@ -80,6 +80,7 @@
         "zod": "^3.22.4",
       },
       "devDependencies": {
+        "@types/bun": "^1.0.0",
         "@typescript-eslint/eslint-plugin": "^6.18.1",
         "@typescript-eslint/parser": "^6.18.1",
         "eslint": "^8.56.0",
@@ -137,6 +138,8 @@
     "@cloudflare-monitor/shared": ["@cloudflare-monitor/shared@workspace:packages/shared"],
 
     "@cloudflare-monitor/web": ["@cloudflare-monitor/web@workspace:apps/web"],
+
+    "@crashbytes/env-shield": ["@crashbytes/env-shield@1.0.0", "", {}, "sha512-rwwdVgE6TaHYdZXGNmSWwGVtrCWGa0Moji1j2nLIB/VdL8IHWRTFbC5NTAmtWWIdH90veufZ3w8kAEI/KNMF7Q=="],
 
     "@cspotcode/source-map-support": ["@cspotcode/source-map-support@0.8.1", "", { "dependencies": { "@jridgewell/trace-mapping": "0.3.9" } }, "sha512-IchNf6dN4tHoMFIn/7OE8LWZ19Y6q/67Bmf6vnGREv8RSbBVb9LPJxEcnwrcwX6ixSvaiGoomAUvu4YSxXrVgw=="],
 
@@ -441,8 +444,6 @@
     "dlv": ["dlv@1.1.3", "", {}, "sha512-+HlytyjlPKnIG8XuRG8WvmBP8xs8P71y+SKKS6ZXWoEgLuePxtDoUEiH7WkdePWrQ5JBpE6aoVqfZfJUQkjXwA=="],
 
     "doctrine": ["doctrine@3.0.0", "", { "dependencies": { "esutils": "^2.0.2" } }, "sha512-yS+Q5i3hBf7GBkd4KG8a7eBNNWNGLTaEwwYWUijIYM7zrlYDM0BFXHjjPWlWZ1Rg7UaddZeIDmi9jF3HmqiQ2w=="],
-
-    "dotenv": ["dotenv@17.2.3", "", {}, "sha512-JVUnt+DUIzu87TABbhPmNfVdBDt18BLOWjMUFJMSi/Qqg7NTYtabbvSNJGOJ7afbRuv9D/lngizHtP7QyLQ+9w=="],
 
     "dunder-proto": ["dunder-proto@1.0.1", "", { "dependencies": { "call-bind-apply-helpers": "^1.0.1", "es-errors": "^1.3.0", "gopd": "^1.2.0" } }, "sha512-KIN/nDJBQRcXw0MLVhZE9iQHmG68qAVIBg9CqmUYjmQIhgij9U5MFvrqkUL5FbtyyzZuOeOt0zdeRe4UY7ct+A=="],
 
