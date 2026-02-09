@@ -1,57 +1,32 @@
 /**
  * Configuration Management System
- * 
- * Implements robust environment validation with:
- * - Zod schema enforcement
- * - Fail-fast initialization
- * - Type-safe configuration access
- * 
- * Design Philosophy:
- * Configuration errors should be caught at startup, not at runtime.
- * This prevents partial system initialization with invalid state.
+ *
+ * Uses @crashbytes/env-shield for type-safe environment validation
+ * with fail-fast initialization at startup.
  */
 
-import { envSchema, type EnvConfig } from '@cloudflare-monitor/shared';
+import { createEnv, s } from '@crashbytes/env-shield';
 
 /**
- * Load and validate environment configuration
- * 
- * @throws {Error} If required environment variables are missing or invalid
- * @returns {EnvConfig} Validated and type-safe configuration object
+ * Validated and type-safe configuration object
  */
-export function loadConfig(): EnvConfig {
-  try {
-    // Parse and validate environment variables
-    const config = envSchema.parse(process.env);
-    
-    // Log non-sensitive configuration for debugging
-    if (config.NODE_ENV === 'development') {
-      console.log('[Config] Environment:', config.NODE_ENV);
-      console.log('[Config] API Port:', config.API_PORT);
-      console.log('[Config] Poll Interval:', config.POLL_INTERVAL_MS, 'ms');
-      console.log('[Config] Database:', config.DATABASE_PATH);
-    }
-    
-    return config;
-  } catch (error) {
-    // Provide actionable error messages for configuration issues
-    if (error instanceof Error) {
-      console.error('❌ Configuration validation failed:');
-      console.error(error.message);
-      console.error('\n💡 Ensure all required environment variables are set.');
-      console.error('   See .env.example for required configuration.');
-    }
-    
-    // Fail fast - don't attempt to start with invalid configuration
-    process.exit(1);
-  }
-}
+export const config = createEnv({
+  schema: {
+    CLOUDFLARE_API_TOKEN: s.string().min(1),
+    CLOUDFLARE_ACCOUNT_ID: s.string().min(1),
+    API_PORT: s.port().default(3001),
+    API_HOST: s.string().default('0.0.0.0'),
+    NODE_ENV: s.enum('development', 'production', 'test').default('development'),
+    POLL_INTERVAL_MS: s.number().int().default(5000),
+    CACHE_TTL_MS: s.number().int().default(10000),
+    DATABASE_PATH: s.string().default('./data/monitor.db'),
+    CORS_ORIGIN: s.url().default('http://localhost:5173'),
+    LOG_LEVEL: s.enum('debug', 'info', 'warn', 'error').default('info'),
+    FAILURE_RETENTION_DAYS: s.number().int().default(7),
+  },
+});
 
-/**
- * Global configuration instance
- * Initialized once at application startup
- */
-export const config = loadConfig();
+export type EnvConfig = typeof config;
 
 /**
  * Configuration validation helper
@@ -59,7 +34,13 @@ export const config = loadConfig();
  */
 export function validateConfig(envVars: Record<string, unknown>): boolean {
   try {
-    envSchema.parse(envVars);
+    createEnv({
+      schema: {
+        CLOUDFLARE_API_TOKEN: s.string().min(1),
+        CLOUDFLARE_ACCOUNT_ID: s.string().min(1),
+      },
+      source: envVars as Record<string, string>,
+    });
     return true;
   } catch {
     return false;

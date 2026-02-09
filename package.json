@@ -58,7 +58,5 @@
     "url": "https://github.com/CrashBytes/cloudflare-monitor/issues"
   },
   "homepage": "https://github.com/CrashBytes/cloudflare-monitor#readme",
-  "dependencies": {
-    "dotenv": "^17.2.3"
-  }
+  "dependencies": {}
 }

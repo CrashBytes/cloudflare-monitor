@@ -1,4 +1,3 @@
-import 'dotenv/config';
 /**
  * 🎯 API Server Entry Point
  * 
