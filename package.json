@@ -60,5 +60,9 @@
   "homepage": "https://github.com/CrashBytes/cloudflare-monitor#readme",
   "dependencies": {
     "dotenv": "^17.4.2"
+  },
+  "overrides": {
+    "lodash": "4.18.0",
+    "shell-quote": "1.8.4"
   }
 }
