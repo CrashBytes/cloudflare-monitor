@@ -15,9 +15,9 @@
     "@cloudflare-monitor/shared": "workspace:*",
     "react": "^19.2.8",
     "react-dom": "^19.2.8",
-    "zustand": "^5.0.14",
+    "zustand": "^5.0.15",
     "react-router-dom": "^7.18.2",
-    "lucide-react": "^1.28.0",
+    "lucide-react": "^1.31.0",
     "date-fns": "^4.4.0"
   },
   "devDependencies": {
@@ -25,14 +25,14 @@
     "@types/react-dom": "^19.2.4",
     "@vitejs/plugin-react": "^6.0.5",
     "typescript": "^7.0.2",
-    "vite": "^8.2.0",
-    "eslint": "^10.8.0",
+    "vite": "^8.2.1",
+    "eslint": "^10.8.1",
     "eslint-plugin-react": "^7.37.5",
     "eslint-plugin-react-hooks": "^7.1.1",
-    "@typescript-eslint/eslint-plugin": "^8.65.0",
-    "@typescript-eslint/parser": "^8.65.0",
+    "@typescript-eslint/eslint-plugin": "^8.67.0",
+    "@typescript-eslint/parser": "^8.67.0",
     "autoprefixer": "^10.5.4",
-    "postcss": "^8.5.25",
+    "postcss": "^8.5.26",
     "tailwindcss": "^4.3.3"
   }
 }
