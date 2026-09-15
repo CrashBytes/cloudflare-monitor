@@ -13,26 +13,26 @@
   },
   "dependencies": {
     "@cloudflare-monitor/shared": "workspace:*",
-    "react": "^19.2.8",
-    "react-dom": "^19.2.8",
+    "react": "^19.3.0",
+    "react-dom": "^19.3.0",
     "zustand": "^5.0.15",
     "react-router-dom": "^7.18.3",
-    "lucide-react": "^1.38.0",
+    "lucide-react": "^1.46.0",
     "date-fns": "^4.4.0"
   },
   "devDependencies": {
-    "@types/react": "^19.2.18",
-    "@types/react-dom": "^19.2.5",
+    "@types/react": "^19.3.0",
+    "@types/react-dom": "^19.3.0",
     "@vitejs/plugin-react": "^6.1.1",
     "typescript": "^7.0.2",
-    "vite": "^8.2.2",
-    "eslint": "^10.9.1",
+    "vite": "^8.3.0",
+    "eslint": "^10.10.0",
     "eslint-plugin-react": "^7.37.5",
     "eslint-plugin-react-hooks": "^7.1.1",
-    "@typescript-eslint/eslint-plugin": "^8.69.0",
-    "@typescript-eslint/parser": "^8.69.0",
-    "autoprefixer": "^10.5.4",
-    "postcss": "^8.5.26",
+    "@typescript-eslint/eslint-plugin": "^8.70.0",
+    "@typescript-eslint/parser": "^8.70.0",
+    "autoprefixer": "^10.6.0",
+    "postcss": "^8.5.28",
     "tailwindcss": "^4.3.3"
   }
 }

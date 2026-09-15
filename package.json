@@ -29,8 +29,8 @@
     "version:major": "npm version major && git push --follow-tags"
   },
   "devDependencies": {
-    "@types/bun": "^1.4.0",
-    "@types/node": "^26.4.0",
+    "@types/bun": "^1.4.2",
+    "@types/node": "^26.5.1",
     "concurrently": "^10.0.5",
     "ts-node": "^10.9.2",
     "typescript": "^7.0.2"

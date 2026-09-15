@@ -17,14 +17,14 @@
   "dependencies": {
     "@cloudflare-monitor/shared": "workspace:*",
     "arg": "^5.0.2",
-    "hono": "^4.13.5",
-    "zod": "^4.5.4"
+    "hono": "^4.13.8",
+    "zod": "^4.6.5"
   },
   "devDependencies": {
-    "@types/bun": "^1.4.0",
-    "@typescript-eslint/eslint-plugin": "^8.69.0",
-    "@typescript-eslint/parser": "^8.69.0",
-    "eslint": "^10.9.1",
+    "@types/bun": "^1.4.2",
+    "@typescript-eslint/eslint-plugin": "^8.70.0",
+    "@typescript-eslint/parser": "^8.70.0",
+    "eslint": "^10.10.0",
     "ts-node": "^10.9.2",
     "typescript": "^7.0.2"
   },
