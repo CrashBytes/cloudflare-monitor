@@ -24,11 +24,11 @@
     "@cloudflare-monitor/shared": "workspace:*"
   },
   "devDependencies": {
-    "@types/bun": "^1.4.2",
+    "@types/bun": "^1.4.3",
     "typescript": "^7.0.2",
-    "eslint": "^10.11.0",
-    "@typescript-eslint/eslint-plugin": "^8.71.0",
-    "@typescript-eslint/parser": "^8.71.0"
+    "eslint": "^10.12.0",
+    "@typescript-eslint/eslint-plugin": "^8.71.2",
+    "@typescript-eslint/parser": "^8.71.2"
   },
   "engines": {
     "bun": ">=1.0.0"
